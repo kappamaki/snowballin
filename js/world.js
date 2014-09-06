@@ -1,7 +1,7 @@
 //constants
 var REDRAW_MS = 100;
 
-var MOVEMENT = 1;
+var MOVEMENT = 3;
 
 var MAX_SPEED_X = 20;
 var MIN_SPEED_Y = 5;
@@ -18,23 +18,30 @@ var SNOW = 1;
 
 var TERRAIN_MIN_WIDTH = 600;
 
-var ROCK_THRESHOLD = 0.7;
+var ROCK_THRESHOLD = 0.6;
 var TREE_THRESHOLD = 0.2;
+
+var BUNNY_KILL_THRESHOLD = 0.5;
+var ROCK_KILL_THRESHOLD = 0.1;
+var TREE_KILL_THRESHOLD = 0.06;
 
 var BUNNY = 0;
 var ROCK = 1;
 var TREE = 2;
 
-var SPAWN_THRESHOLD = 100;
+var SPAWN_THRESHOLD = 300;
 
-var SPAWN_CHANCE = 0.05;
+var SPAWN_CHANCE = 0.15;
 
-var COLLISION_FORGIVENESS = 20;
+var COLLISION_FORGIVENESS_X = 30;
+var COLLISION_FORGIVENESS_Y = 60;
+var COLLISION_MIN = 20;
 
 //global variables
 //sprite resources
 var snowballSprite;
-var bunnySprite;
+var bunnySpriteLeft;
+var bunnySpriteRight;
 var rockSprite;
 var treeSprite;
 
@@ -52,8 +59,9 @@ $(document).ready(function(){
 	worldScale = 1.0;
 	game_loop = setInterval(gameLoop, REDRAW_MS);
 	
-	snowballSprite = loadSprite('img/sprites/snowball/', 2, 500);
-	bunnySprite = loadSprite('img/sprites/bunny/', 2, 500);
+	snowballSprite = loadSprite('img/sprites/snowball/', 12, 50);
+	bunnySpriteLeft = loadSprite('img/sprites/bunny_left/', 2, 500);
+	bunnySpriteRight = loadSprite('img/sprites/bunny_right/', 2, 500);
 	rockSprite = loadSprite('img/sprites/rock/', 1, 0);
 	treeSprite = loadSprite('img/sprites/tree/', 1, 0);
 	
@@ -109,11 +117,11 @@ function checkBounds(character) {
 	var halfHeight = (character.height()/2);
 	if(character.x + halfWidth > worldW) {
 		 character.x = (worldW - halfWidth);
-		 snowballCharacter.speedX = -MAX_SPEED_X;
+		 snowballCharacter.speedX = -snowballCharacter.speedX;
 	}
 	if(character.x - halfWidth < 0) {
 		character.x = (0 + halfWidth);
-		 snowballCharacter.speedX = MAX_SPEED_X;
+		 snowballCharacter.speedX = -snowballCharacter.speedX;
 	}
 }
 
@@ -147,21 +155,33 @@ function spawnObstacles() {
 		
 		var newCharacter;
 		switch(spawnType) {
-			case BUNNY:
-				newCharacter = createCharacter(bunnySprite);
-				newCharacter.speedX = 10;
-				break;
-			case ROCK:
-				newCharacter = createCharacter(rockSprite);
-				break;
 			case TREE:
 				newCharacter = createCharacter(treeSprite);
+				newCharacter.obstacleType = TREE;
+				newCharacter.x = Math.random() * worldW;
+				newCharacter.y = worldH + SPAWN_THRESHOLD;
+				obstacleCharacters.push(newCharacter);
+			case ROCK:
+				newCharacter = createCharacter(rockSprite);
+				newCharacter.obstacleType = ROCK;
+				newCharacter.x = Math.random() * worldW;
+				newCharacter.y = worldH + SPAWN_THRESHOLD;
+				obstacleCharacters.push(newCharacter);
+			case BUNNY:
+				var xPos = Math.random() * worldW;
+				if(xPos < worldW/2.0) {
+					newCharacter = createCharacter(bunnySpriteLeft);
+					newCharacter.speedX = 10;
+				} else {
+					newCharacter = createCharacter(bunnySpriteRight);
+					newCharacter.speedX = -10;
+				}
+				newCharacter.obstacleType = BUNNY;
+				newCharacter.x = xPos
+				newCharacter.y = worldH + SPAWN_THRESHOLD;
+				obstacleCharacters.push(newCharacter);
 				break;
 		}
-		newCharacter.x = Math.random() * worldW;
-		
-		newCharacter.y = worldH + SPAWN_THRESHOLD;
-		obstacleCharacters.push(newCharacter);
 	}
 }
 
@@ -183,12 +203,38 @@ function checkPlayerCollisions() {
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		if(checkPlayerCollision(obstacleCharacters[i]))
 		{
-			alert('you are dead!');
+			switch(obstacleCharacters[i].obstacleType)
+			{
+				case BUNNY:
+					if(worldScale <= BUNNY_KILL_THRESHOLD) {
+						obstacleCharacters.shift();
+						i--;
+					} else {
+						snowballCharacter = null;
+					}
+					break;
+				case ROCK:
+					if(worldScale <= ROCK_KILL_THRESHOLD) {
+						obstacleCharacters.shift();
+						i--;
+					} else {
+						snowballCharacter = null;
+					}
+					break;
+				case TREE:
+					if(worldScale <= TREE_KILL_THRESHOLD) {
+						obstacleCharacters.shift();
+						i--;
+					} else {
+						snowballCharacter = null;
+					}
+					break;
+			}
 		}
 	}
 }
 
 function checkPlayerCollision(obstacle) {
-  return (Math.abs(snowballCharacter.x - obstacle.x) * 2 < (snowballCharacter.width() + (obstacle.width() * worldScale - COLLISION_FORGIVENESS))) &&
-         (Math.abs(snowballCharacter.y - obstacle.y) * 2 < (snowballCharacter.height() + (obstacle.height() * worldScale - COLLISION_FORGIVENESS)));
+  return (Math.abs(snowballCharacter.x - obstacle.x) * 2 < (snowballCharacter.width() + Math.min(obstacle.width() * worldScale - COLLISION_FORGIVENESS_X, COLLISION_MIN))) &&
+         (Math.abs(snowballCharacter.y - obstacle.y) * 2 < (snowballCharacter.height() + Math.min(obstacle.height() * worldScale - COLLISION_FORGIVENESS_Y, COLLISION_MIN)));
 }
