@@ -53,7 +53,7 @@ function gameLoop() {
 	snowballCharacter.x += snowballCharacter.speedX;
 	checkBounds(snowballCharacter);
 	checkSnow(terrainGrid, snowballCharacter);
-	terrainGrid = shiftTerrain(terrainGrid, speedY);
+	terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
 	paint();
 }
 
@@ -83,11 +83,11 @@ function checkBounds(character) {
 function checkSnow(terrainGrid, character) {
 	if(terrainGrid[character.x][character.y] === SNOW)
 	{
-		speedY = (speedY+1) > MAX_SPEED_Y ? MAX_SPEED_Y : (speedY+1);
+		snowballCharacter.speedY = (snowballCharacter.speedY+1) > MAX_SPEED_Y ? MAX_SPEED_Y : (snowballCharacter.speedY+1);
 		worldScale = (worldScale * WORLD_SHRINK_CONSTANT) < WORLD_MIN_SCALE ? WORLD_MIN_SCALE : (worldScale * WORLD_SHRINK_CONSTANT);
 	} else {	
-		speedY = (speedY-1) < MIN_SPEED_Y ? MIN_SPEED_Y : (speedY-1);
-		worldScale = (worldScale * WORLD_GROWTH_CONSTANT) > WORLD_MAX_SCALE ? WORLD_MAX_SCALE : (worldScale * WORLD_GROWTH_CONSTANT);
+		snowballCharacter.speedY = (snowballCharacter.speedY-1) < MIN_SPEED_Y ? MIN_SPEED_Y : (snowballCharacter.speedY-1);
+		//worldScale = (worldScale * WORLD_GROWTH_CONSTANT) > WORLD_MAX_SCALE ? WORLD_MAX_SCALE : (worldScale * WORLD_GROWTH_CONSTANT);
 	}
 	
 }
