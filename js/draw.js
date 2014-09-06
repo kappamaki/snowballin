@@ -1,6 +1,5 @@
 var canvas;
-var ctx;
-
+var ctx;
 var DIRT_COLOUR = [200, 200, 255,  255]
 var SNOW_COLOUR = [255, 255, 255,  255]
 	
@@ -27,13 +26,33 @@ function paint()
 	drawTerrain(ctx, terrainGrid);
 	snowballCharacter.sprite.stepAnimation(REDRAW_MS);
 	snowballCharacter.sprite.draw(ctx, snowballCharacter.x, snowballCharacter.y, 1.0);
+	
 	drawObstacles();
+	
+	if(DRAW_HITBOXES) {
+		ctx.fillStyle = 'red';
+		ctx.fillRect(
+			snowballCharacter.x + snowballCharacter.collisionBox.x - ((snowballCharacter.collisionBox.w/2)),
+			snowballCharacter.y + snowballCharacter.collisionBox.y - ((snowballCharacter.collisionBox.h/2)),
+			snowballCharacter.collisionBox.w,
+			snowballCharacter.collisionBox.h);
+	}
 }
 
 function drawObstacles() {
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		obstacleCharacters[i].sprite.stepAnimation(REDRAW_MS);
 		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
+		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
+
+		if(DRAW_HITBOXES) {
+			ctx.fillStyle = 'red';
+			ctx.fillRect(
+				obstacleCharacters[i].x + obstacleCharacters[i].collisionBox.x*worldScale - ((obstacleCharacters[i].collisionBox.w/2)*worldScale),
+				obstacleCharacters[i].y + obstacleCharacters[i].collisionBox.y*worldScale - ((obstacleCharacters[i].collisionBox.h/2)*worldScale),
+				obstacleCharacters[i].collisionBox.w*worldScale,
+				obstacleCharacters[i].collisionBox.h*worldScale);
+		}
 	}
 }
 

@@ -1,3 +1,5 @@
+var DRAW_HITBOXES = true;
+
 //constants
 var REDRAW_MS = 100;
 
@@ -18,24 +20,19 @@ var SNOW = 1;
 
 var TERRAIN_MIN_WIDTH = 600;
 
-var ROCK_THRESHOLD = 0.6;
-var TREE_THRESHOLD = 0.2;
-
-var BUNNY_KILL_THRESHOLD = 0.5;
-var ROCK_KILL_THRESHOLD = 0.1;
-var TREE_KILL_THRESHOLD = 0.06;
-
+var LEVEL0_THRESHOLD = 1.0;
+var LEVEL1_THRESHOLD = 0.6;
+var LEVEL2_THRESHOLD = 0.2;
 var BUNNY = 0;
 var ROCK = 1;
 var TREE = 2;
 
+var KILL_THRESHOLD = [0.5, 0.3, 0.05];
+
+var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15] ];
+//var OBSTACLE_SPAWN_CHANCE = [ [0.0, 0.00, 0.1], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15] ];
+
 var SPAWN_THRESHOLD = 300;
-
-var SPAWN_CHANCE = 0.15;
-
-var COLLISION_FORGIVENESS_X = 30;
-var COLLISION_FORGIVENESS_Y = 60;
-var COLLISION_MIN = 20;
 
 //global variables
 //sprite resources
@@ -44,6 +41,11 @@ var bunnySpriteLeft;
 var bunnySpriteRight;
 var rockSprite;
 var treeSprite;
+
+var snowballCollisonBox;
+var bunnyCollisonBox;
+var rockCollisonBox;
+var treeCollisonBox;
 
 var worldW;
 var worldH;
@@ -64,8 +66,13 @@ $(document).ready(function(){
 	bunnySpriteRight = loadSprite('img/sprites/bunny_right/', 2, 500);
 	rockSprite = loadSprite('img/sprites/rock/', 1, 0);
 	treeSprite = loadSprite('img/sprites/tree/', 1, 0);
+
+	snowballCollisonBox = createCollisonBox(0,0,50,62);
+	bunnyCollisonBox = createCollisonBox(0,0,80,50);
+	rockCollisonBox = createCollisonBox(0,10,230,130);
+	treeCollisonBox = createCollisonBox(0,300,600,200);
 	
-	snowballCharacter = createCharacter(snowballSprite);
+	snowballCharacter = createCharacter(snowballSprite, snowballCollisonBox);
 	snowballCharacter.x = (worldW / 2);
 	snowballCharacter.y = (worldH / 4);
 	snowballCharacter.speedY = MIN_SPEED_Y;
@@ -77,6 +84,8 @@ $(document).ready(function(){
 });
 
 function gameLoop() {
+	checkPlayerCollisions();
+	
 	//friction
 	if(snowballCharacter.speedX > 0) snowballCharacter.speedX -= 1;
 	if(snowballCharacter.speedX < 0) snowballCharacter.speedX += 1;
@@ -90,11 +99,9 @@ function gameLoop() {
 	
 	terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
 	paint();
-
-	checkPlayerCollisions();
 }
 
-function createCharacter(sprite) {
+function createCharacter(sprite, collisionBox) {
 	return {
 		x: 0,
 		y: 0,
@@ -109,6 +116,17 @@ function createCharacter(sprite) {
 		height: function() {
 			return this.sprite.getCurrentFrameImage().height;
 		},
+		
+		collisionBox: collisionBox
+	}
+}
+
+function createCollisonBox(x, y, w, h) {
+	return {
+		x: x,
+		y: y,
+		w: w,
+		h: h
 	}
 }
 
@@ -141,47 +159,43 @@ function checkSnow(terrainGrid, character) {
 }
 
 function spawnObstacles() {
-	if(Math.random() < SPAWN_CHANCE)
+	var level;
+	if(worldScale <= LEVEL0_THRESHOLD) level = 0;
+	if(worldScale <= LEVEL1_THRESHOLD) level = 1;
+	if(worldScale <= LEVEL2_THRESHOLD) level = 2;
+	
+	if(Math.random() < OBSTACLE_SPAWN_CHANCE[level][BUNNY])
 	{
-		if(worldScale <= TREE_THRESHOLD) {
-			var spawnType = parseInt(Math.random() * 3);
-			
-		} else if(worldScale <= ROCK_THRESHOLD) {
-			var spawnType = parseInt(Math.random() * 2);
-			
+		var xPos = Math.random() * worldW;
+		if(xPos < worldW/2.0) {
+			newCharacter = createCharacter(bunnySpriteLeft, bunnyCollisonBox);
+			newCharacter.speedX = 10;
 		} else {
-			var spawnType = BUNNY;
+			newCharacter = createCharacter(bunnySpriteRight, bunnyCollisonBox);
+			newCharacter.speedX = -10;
 		}
-		
-		var newCharacter;
-		switch(spawnType) {
-			case TREE:
-				newCharacter = createCharacter(treeSprite);
-				newCharacter.obstacleType = TREE;
-				newCharacter.x = Math.random() * worldW;
-				newCharacter.y = worldH + SPAWN_THRESHOLD;
-				obstacleCharacters.push(newCharacter);
-			case ROCK:
-				newCharacter = createCharacter(rockSprite);
-				newCharacter.obstacleType = ROCK;
-				newCharacter.x = Math.random() * worldW;
-				newCharacter.y = worldH + SPAWN_THRESHOLD;
-				obstacleCharacters.push(newCharacter);
-			case BUNNY:
-				var xPos = Math.random() * worldW;
-				if(xPos < worldW/2.0) {
-					newCharacter = createCharacter(bunnySpriteLeft);
-					newCharacter.speedX = 10;
-				} else {
-					newCharacter = createCharacter(bunnySpriteRight);
-					newCharacter.speedX = -10;
-				}
-				newCharacter.obstacleType = BUNNY;
-				newCharacter.x = xPos
-				newCharacter.y = worldH + SPAWN_THRESHOLD;
-				obstacleCharacters.push(newCharacter);
-				break;
-		}
+		newCharacter.obstacleType = BUNNY;
+		newCharacter.x = xPos
+		newCharacter.y = worldH + SPAWN_THRESHOLD;
+		obstacleCharacters.push(newCharacter);
+	}
+
+	if(Math.random() < OBSTACLE_SPAWN_CHANCE[level][ROCK])
+	{
+		newCharacter = createCharacter(rockSprite, rockCollisonBox);
+		newCharacter.obstacleType = ROCK;
+		newCharacter.x = Math.random() * worldW;
+		newCharacter.y = worldH + SPAWN_THRESHOLD;
+		obstacleCharacters.push(newCharacter);
+	}
+	
+	if(Math.random() < OBSTACLE_SPAWN_CHANCE[level][TREE])
+	{
+		newCharacter = createCharacter(treeSprite, treeCollisonBox);
+		newCharacter.obstacleType = TREE;
+		newCharacter.x = Math.random() * worldW;
+		newCharacter.y = worldH + SPAWN_THRESHOLD;
+		obstacleCharacters.push(newCharacter);
 	}
 }
 
@@ -203,38 +217,27 @@ function checkPlayerCollisions() {
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		if(checkPlayerCollision(obstacleCharacters[i]))
 		{
-			switch(obstacleCharacters[i].obstacleType)
-			{
-				case BUNNY:
-					if(worldScale <= BUNNY_KILL_THRESHOLD) {
-						obstacleCharacters.shift();
-						i--;
-					} else {
-						snowballCharacter = null;
-					}
-					break;
-				case ROCK:
-					if(worldScale <= ROCK_KILL_THRESHOLD) {
-						obstacleCharacters.shift();
-						i--;
-					} else {
-						snowballCharacter = null;
-					}
-					break;
-				case TREE:
-					if(worldScale <= TREE_KILL_THRESHOLD) {
-						obstacleCharacters.shift();
-						i--;
-					} else {
-						snowballCharacter = null;
-					}
-					break;
+			if(worldScale <= KILL_THRESHOLD[obstacleCharacters[i].obstacleType]) {
+				obstacleCharacters.shift();
+				i--;
+			} else {
+				snowballCharacter.speedY = -50;
 			}
 		}
 	}
 }
 
 function checkPlayerCollision(obstacle) {
-  return (Math.abs(snowballCharacter.x - obstacle.x) * 2 < (snowballCharacter.width() + Math.min(obstacle.width() * worldScale - COLLISION_FORGIVENESS_X, COLLISION_MIN))) &&
-         (Math.abs(snowballCharacter.y - obstacle.y) * 2 < (snowballCharacter.height() + Math.min(obstacle.height() * worldScale - COLLISION_FORGIVENESS_Y, COLLISION_MIN)));
+	var obstacleX = obstacle.x + obstacle.collisionBox.x*worldScale - ((obstacle.collisionBox.w/2)*worldScale);
+	var obstacleY = obstacle.y + obstacle.collisionBox.y*worldScale - ((obstacle.collisionBox.h/2)*worldScale);
+	var obstacleW = obstacle.collisionBox.w*worldScale;
+	var obstacleH = obstacle.collisionBox.h*worldScale;
+
+	var snowballX = snowballCharacter.x + snowballCharacter.collisionBox.x - ((snowballCharacter.collisionBox.w/2));
+	var snowballY = snowballCharacter.y + snowballCharacter.collisionBox.y - ((snowballCharacter.collisionBox.h/2));
+	var snowballW = snowballCharacter.collisionBox.w;
+	var snowballH = snowballCharacter.collisionBox.h;
+				
+	return (Math.abs(snowballX - obstacleX) * 2 < (snowballW + obstacleW)) &&
+	       (Math.abs(snowballY - obstacleY) * 2 < (snowballH + obstacleH));
 }
