@@ -1,7 +1,3 @@
-var DIRT = 0;
-var SNOW = 1;
-var TERRAIN_MIN_WIDTH = 400;
-
 function seedTerrain() {
 	var terrainGrid = new Array(worldW);
 	for(var x=0; x<worldW; x++) {

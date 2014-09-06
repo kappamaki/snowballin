@@ -1,5 +1,5 @@
 //constants
-var REDRAW_MS = 50;
+var REDRAW_MS = 100;
 
 var MOVEMENT = 1;
 
@@ -8,10 +8,16 @@ var MIN_SPEED_Y = 5;
 var MAX_SPEED_Y = 30;
 
 var WORLD_MAX_SCALE = 1.0;
-var WORLD_MIN_SCALE = 0.3;
+var WORLD_MIN_SCALE = 0.2;
 
-var SNOWBALL_GROWTH_CONSTANT = 1.001;
-var SNOWBALL_SHRINK_CONSTANT = 0.999;
+var WORLD_GROWTH_CONSTANT = 1.001;
+var WORLD_SHRINK_CONSTANT = 0.999;
+
+var DIRT = 0;
+var SNOW = 1;
+
+var TERRAIN_MIN_WIDTH = 600;
+
 
 //sprite resources
 var worldW;
@@ -78,10 +84,10 @@ function checkSnow(terrainGrid, character) {
 	if(terrainGrid[character.x][character.y] === SNOW)
 	{
 		speedY = (speedY+1) > MAX_SPEED_Y ? MAX_SPEED_Y : (speedY+1);
-		worldScale = (worldScale * SNOWBALL_SHRINK_CONSTANT) < WORLD_MIN_SCALE ? WORLD_MIN_SCALE : (worldScale * SNOWBALL_SHRINK_CONSTANT);
+		worldScale = (worldScale * WORLD_SHRINK_CONSTANT) < WORLD_MIN_SCALE ? WORLD_MIN_SCALE : (worldScale * WORLD_SHRINK_CONSTANT);
 	} else {	
 		speedY = (speedY-1) < MIN_SPEED_Y ? MIN_SPEED_Y : (speedY-1);
-		worldScale = (worldScale * SNOWBALL_GROWTH_CONSTANT) > WORLD_MAX_SCALE ? WORLD_MAX_SCALE : (worldScale * SNOWBALL_GROWTH_CONSTANT);
+		worldScale = (worldScale * WORLD_GROWTH_CONSTANT) > WORLD_MAX_SCALE ? WORLD_MAX_SCALE : (worldScale * WORLD_GROWTH_CONSTANT);
 	}
 	
 }
