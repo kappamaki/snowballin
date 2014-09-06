@@ -47,7 +47,7 @@ function generateTerrainRow(terrainGrid, y) {
 					terrainGrid[x][y] = SNOW;
 					snowStart = x;
 				} else if(terrainGrid[prevX][prevY] ===  SNOW || terrainGrid[x][prevY] === SNOW || terrainGrid[nextX][prevY] === SNOW) {
-					if(Math.floor((Math.random() * 2.6)) == 1)
+					if(Math.floor((Math.random() * 2.6)) == 1) //magic number =(
 					{
 						terrainGrid[x][y] = SNOW;
 						snowStart = x;

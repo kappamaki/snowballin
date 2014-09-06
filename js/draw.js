@@ -26,7 +26,15 @@ function paint()
 	
 	drawTerrain(ctx, terrainGrid);
 	snowballCharacter.sprite.stepAnimation(REDRAW_MS);
-	snowballCharacter.sprite.draw(ctx, snowballCharacter.x, snowballCharacter.y, 1.0)
+	snowballCharacter.sprite.draw(ctx, snowballCharacter.x, snowballCharacter.y, 1.0);
+	drawObstacles();
+}
+
+function drawObstacles() {
+	for(var i=0; i<obstacleCharacters.length; i++) {
+		obstacleCharacters[i].sprite.stepAnimation(REDRAW_MS);
+		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
+	}
 }
 
 function drawTerrain(context, terrainGrid) {
