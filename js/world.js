@@ -18,17 +18,13 @@ var SNOW = 1;
 
 var TERRAIN_MIN_WIDTH = 600;
 
-
+//global variables
 //sprite resources
+var snowballSprite;
+
 var worldW;
 var worldH;
-
-var speedY = MIN_SPEED_Y;
-var speedX = 0;
-var movementShift = 0;
-
 var worldScale;
-var snowballSprite;
 
 var snowballCharacter;
 
@@ -43,16 +39,18 @@ $(document).ready(function(){
 	snowballCharacter = createCharacter(snowballSprite);
 	snowballCharacter.x = (worldW / 2);
 	snowballCharacter.y = (worldH / 4);
+	snowballCharacter.speedY = MIN_SPEED_Y;
+	snowballCharacter.speedX = 0;
 	
 	terrainGrid = seedTerrain();
 });
 
 function gameLoop() {
 	//friction
-	if(speedX > 0) speedX -= 1;
-	if(speedX < 0) speedX += 1;
+	if(snowballCharacter.speedX > 0) snowballCharacter.speedX -= 1;
+	if(snowballCharacter.speedX < 0) snowballCharacter.speedX += 1;
 	
-	snowballCharacter.x += speedX;
+	snowballCharacter.x += snowballCharacter.speedX;
 	checkBounds(snowballCharacter);
 	checkSnow(terrainGrid, snowballCharacter);
 	terrainGrid = shiftTerrain(terrainGrid, speedY);
@@ -63,6 +61,8 @@ function createCharacter(sprite) {
 	return {
 		x: 0,
 		y: 0,
+		speedX: 0,
+		speedY: 0,
 		sprite: sprite
 	}
 }
@@ -72,11 +72,11 @@ function checkBounds(character) {
 	var halfHeight = (character.sprite.getCurrentFrameImage().height/2);
 	if(character.x + halfWidth > worldW) {
 		 character.x = (worldW - halfWidth);
-		 speedX = -MAX_SPEED_X;
+		 snowballCharacter.speedX = -MAX_SPEED_X;
 	}
 	if(character.x - halfWidth < 0) {
 		character.x = (0 + halfWidth);
-		 speedX = MAX_SPEED_X;
+		 snowballCharacter.speedX = MAX_SPEED_X;
 	}
 }
 
