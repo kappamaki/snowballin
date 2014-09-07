@@ -17,7 +17,6 @@ var WORLD_SHRINK_CONSTANT = 0.995;
 
 var DIRT = 0;
 var SNOW = 1;
-var CLIFF = 2;
 
 var TERRAIN_MIN_WIDTH = 600;
 
