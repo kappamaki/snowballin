@@ -16,7 +16,7 @@ $(document).ready(function(){
 	audioPlayer_impactEffect = document.getElementById('audioPlayer_impactEffect');
 	audioPlayer_impactEffect.src = 'aud/impact.wav';
 	splashStartImage = new Image();
-	splashStartImage.src = 'img/splash_start.png';
+	splashStartImage.src = 'img/splash_title.png';
 	
 	var onloadCallback = function showSplashScreen() {
 		displayImage(splashStartImage)
@@ -24,4 +24,6 @@ $(document).ready(function(){
 	splashStartImage.onload = onloadCallback;
 	musicPlayer.src = 'mus/intro.mp3';
 	musicPlayer.play();
+	
+	gameState = START_SCREEN;
 });

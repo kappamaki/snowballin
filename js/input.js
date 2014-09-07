@@ -20,8 +20,11 @@ $(document).keydown(function(e){
 		PAUSED = !PAUSED;
 	}
 	if(key === 32) {  //spacebar
-		initiateGameWorld();
-		stopGameLoop();
-		startGameLoop();
+		if(gameState !== PLAYING)
+		{
+			initiateGameWorld();
+			stopGameLoop();
+			startGameLoop();
+		}
 	}
 });

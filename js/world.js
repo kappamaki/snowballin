@@ -43,6 +43,7 @@ var SPAWN_THRESHOLD = 300;
 
 var game_loop;
 var snowballIsDead;
+var snowballIsVictorious;
 
 //global variables
 //sprite resources
@@ -107,6 +108,7 @@ $(document).ready(function(){
 
 function initiateGameWorld() {
 	snowballIsDead = false;
+	snowballIsVictorious = false;
 	snowballLevel = 1;
 	snowballHighestLevelAchieved = 1;
 	playerPoints = 0.0;
@@ -127,6 +129,7 @@ function initiateGameWorld() {
 }
 
 function startGameLoop() {
+	gameState = PLAYING;
 	game_loop = setInterval(gameLoop, REDRAW_MS);
 	musicPlayer.src = 'mus/jaunty_gumption.mp3';
 	musicPlayer.load();
@@ -154,6 +157,7 @@ function gameLoop() {
 			snowballCharacter.x += snowballCharacter.speedX;
 			
 			if(worldScale === WORLD_MIN_SCALE) {
+				snowballIsVictorious = true;
 				snowballCharacter.y += snowballCharacter.speedY;
 			} else {
 				terrainGrid = shiftTerrain(terrainGrid, parseInt(snowballCharacter.speedY / TERRAIN_SCALE));
@@ -169,7 +173,42 @@ function gameLoop() {
 		}
 				paint(snowballIsDead);
 	}
+	
+	if(snowballIsDead && gameState !== GAME_OVER) {
+		gameState = GAME_OVER;
+		setTimeout(gameOver, 2000);
+	}
+	
+	if(snowballIsVictorious && gameState !== VICTORY) {
+		gameState = VICTORY;
+		setTimeout(victory, 8000);
+	}
 }
+
+function gameOver() {
+	stopGameLoop();
+	
+	splashImage = new Image();
+	splashImage.src = 'img/splash_lose.png';
+	var onloadCallback = function showSplashScreen() {
+		displayImage(splashImage)
+		drawScore();
+	};
+	splashImage.onload = onloadCallback;
+}
+
+function victory() {
+	stopGameLoop();
+
+	splashImage = new Image();
+	splashImage.src = 'img/splash_win.png';
+	var onloadCallback = function showSplashScreen() {
+		displayImage(splashImage)
+		drawScore();
+	};
+	splashImage.onload = onloadCallback;
+}
+
 
 function updateSnowballLevel() {
 
@@ -424,7 +463,7 @@ function checkPlayerCollisions() {
 						playerPoints += 500;
 						break;
 					case SKIER:
-						deathSprite = loadSprite('img/sprites/rock_die/', 7, 50);
+						deathSprite = loadSprite('img/sprites/skier_die/', 6, 50);
 						playerPoints += 2000;
 						break;
 				}

@@ -46,6 +46,10 @@ function paint(snowballIsDead)
 			snowballCharacter.collisionBox.h);
 	}
 	
+	drawScore();
+}
+
+function drawScore() {
 	ctx.lineWidth = 2;
 	ctx.textAlign = 'right';
 	ctx.fillStyle = 'blue';
