@@ -176,12 +176,12 @@ function gameLoop() {
 	
 	if(snowballIsDead && gameState !== GAME_OVER) {
 		gameState = GAME_OVER;
-		setTimeout(gameOver, 2000);
+		setTimeout(gameOver, 1500);
 	}
 	
 	if(snowballIsVictorious && gameState !== VICTORY) {
 		gameState = VICTORY;
-		setTimeout(victory, 5000);
+		setTimeout(victory, 2500);
 	}
 }
 
@@ -196,7 +196,7 @@ function gameOver() {
 	var onloadCallback = function showSplashScreen() {
 		displayImage(splashImage)
 		drawScore();
-		gameState = GAME_OVER;
+		gameState = SPLASH;
 	};
 	splashImage.onload = onloadCallback;
 }
@@ -209,7 +209,7 @@ function victory() {
 	var onloadCallback = function showSplashScreen() {
 		displayImage(splashImage)
 		drawScore();
-		gameState = VICTORY;
+		gameState = SPLASH;
 	};
 	splashImage.onload = onloadCallback;
 }

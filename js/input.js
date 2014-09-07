@@ -26,7 +26,7 @@ $(document).keydown(function(e){
 		PAUSED = !PAUSED;
 	}
 	if(key === 32) {  //spacebar
-		if(gameState !== PLAYING)
+		if(gameState === SPLASH)
 		{
 			initiateGameWorld();
 			stopGameLoop();

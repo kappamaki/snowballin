@@ -1,4 +1,4 @@
-var START_SCREEN = 0;
+var SPLASH = 0;
 var PLAYING = 1;
 var GAME_OVER = 2;
 var VICTORY = 3;
@@ -7,7 +7,6 @@ var gameState;
 var musicPlayer;
 var soundEffectPlayer;
 
-var splashStartImage;
 
 $(document).ready(function(){
 	musicPlayer = document.getElementById('musicPlayer');
@@ -15,7 +14,7 @@ $(document).ready(function(){
 
 	audioPlayer_impactEffect = document.getElementById('audioPlayer_impactEffect');
 	audioPlayer_impactEffect.src = 'aud/impact.wav';
-	splashStartImage = new Image();
+	var splashStartImage = new Image();
 	splashStartImage.src = 'img/splash_title.png';
 	
 	var onloadCallback = function showSplashScreen() {
@@ -25,5 +24,5 @@ $(document).ready(function(){
 	musicPlayer.src = 'mus/intro.mp3';
 	musicPlayer.play();
 	
-	gameState = START_SCREEN;
+	gameState = SPLASH;
 });
