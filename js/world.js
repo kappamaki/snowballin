@@ -36,6 +36,8 @@ var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01], [0.15, 0.10, 0.05], [0.15, 0.1
 
 var SPAWN_THRESHOLD = 300;
 
+var game_loop;
+
 //global variables
 //sprite resources
 var snowballSprite;
@@ -71,12 +73,12 @@ $(document).ready(function(){
 	bunnyCollisonBox = createCollisonBox(0,0,80,50);
 	rockCollisonBox = createCollisonBox(0,10,230,130);
 	treeCollisonBox = createCollisonBox(0,300,600,200);
+	
+	initiateGameWorld();
 });
 
-function initiateGame() {
+function initiateGameWorld() {
 	worldScale = 1.0;
-	game_loop = setInterval(gameLoop, REDRAW_MS);
-	
 	snowballCharacter = createCharacter(snowballSprite, snowballCollisonBox);
 	snowballCharacter.x = (worldW / 2);
 	snowballCharacter.y = (worldH / 4);
@@ -86,6 +88,10 @@ function initiateGame() {
 	obstacleCharacters = new Array();
 	
 	terrainGrid = seedTerrain();
+}
+
+function startGameLoop() {
+	game_loop = setInterval(gameLoop, REDRAW_MS);
 }
 
 function gameLoop() {
@@ -208,16 +214,26 @@ function spawnObstacles() {
 }
 
 function stepObstacles() {
+	var obstaclesToDestroy = new Array();
+	var tempObstacles = new Array();
+	
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		obstacleCharacters[i].x += obstacleCharacters[i].speedX;
 		obstacleCharacters[i].y -= snowballCharacter.speedY;
 		
 		//despawn
 		if(obstacleCharacters[i].y + SPAWN_THRESHOLD < 0)
-		{
-			obstacleCharacters.shift();
-			i--;
+			obstaclesToDestroy.push(i);
+	}
+	
+	if(obstaclesToDestroy.length > 0) {
+		for(var i=0; i<obstacleCharacters.length; i++) {
+			if($.inArray(i, obstaclesToDestroy) === -1) {
+				tempObstacles.push(obstacleCharacters[i]);
+			}
 		}
+		
+		obstacleCharacters = tempObstacles;
 	}
 }
 
