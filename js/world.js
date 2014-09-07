@@ -3,6 +3,8 @@ var DRAW_HITBOXES = false;
 //constants
 var REDRAW_MS = 50;
 
+var GODMODE = false;
+
 var MOVEMENT = 3;
 
 var MAX_SPEED_X = 20;
@@ -203,6 +205,9 @@ function gameOver() {
 
 function victory() {
 	stopGameLoop();
+	musicPlayer.src = 'mus/victory.mp3';
+	musicPlayer.load();
+	musicPlayer.play();
 
 	splashImage = new Image();
 	splashImage.src = 'img/splash_win.png';
@@ -449,7 +454,7 @@ function checkPlayerCollisions() {
 		{
 			collided = true;
 	
-			if(worldScale <= KILL_THRESHOLD[obstacleCharacters[i].obstacleType]) {
+			if(worldScale <= KILL_THRESHOLD[obstacleCharacters[i].obstacleType] || GODMODE) {
 				obstaclesToDestroy.push(i);
 				obstacleCount[obstacleCharacters[i].obstacleType] -= 1;
 				var deathSprite;

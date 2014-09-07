@@ -22,8 +22,10 @@ $(document).keydown(function(e){
 			WORLD_MAX_SCALE = 1.0;
 	}
 	if(key === 90) { //z
-		console.log("Z pressed!");
 		PAUSED = !PAUSED;
+	}
+	if(key === 49) { //z
+		GODMODE = !GODMODE;
 	}
 	if(key === 32) {  //spacebar
 		if(gameState === SPLASH)

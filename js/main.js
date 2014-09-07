@@ -15,7 +15,7 @@ $(document).ready(function(){
 	audioPlayer_impactEffect = document.getElementById('audioPlayer_impactEffect');
 	audioPlayer_impactEffect.src = 'aud/impact.wav';
 	var splashStartImage = new Image();
-	splashStartImage.src = 'img/splash_title.png';
+	splashStartImage.src = 'img/splash_start.jpg';
 	
 	var onloadCallback = function showSplashScreen() {
 		displayImage(splashStartImage)
