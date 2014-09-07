@@ -442,7 +442,7 @@ function checkPlayerCollisions() {
 				{
 					snowballIsDead = true;
 				} else {
-					snowballCharacter.speedY = -MAX_SPEED_Y;
+					setSpeedAfterCollision(obstacleCharacters[i]);
 				}
 			}
 				
@@ -506,4 +506,16 @@ function checkPlayerCollision(obstacle) {
 	        || obstacleRightX < snowballLeftX
 	        || obstacleTopY > snowballBottomY
 	        || obstacleBottomY < snowballTopY);	
+}
+
+function setSpeedAfterCollision(obstacle) {
+	var vectorX = snowballCharacter.x - obstacle.x;
+	var vectorY = snowballCharacter.y - obstacle.y;
+	
+	var vectorAbs = Math.sqrt(vectorX*vectorX + vectorY*vectorY);
+	vectorX /= vectorAbs;
+	vectorY /= vectorAbs;
+	
+	snowballCharacter.speedX = vectorX * MAX_SPEED_X;
+	snowballCharacter.speedY = vectorY * MAX_SPEED_Y;
 }
