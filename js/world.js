@@ -1,7 +1,7 @@
 var DRAW_HITBOXES = true;
 
 //constants
-var REDRAW_MS = 1;
+var REDRAW_MS = 50;
 
 var MOVEMENT = 3;
 
