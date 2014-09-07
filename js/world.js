@@ -12,7 +12,7 @@ var MAX_SPEED_Y = 15;
 var WORLD_MAX_SCALE = 1.0;
 var WORLD_MIN_SCALE = 0.05;
 
-var WORLD_GROWTH_CONSTANT = 1.005;
+var WORLD_GROWTH_CONSTANT = 1.1;
 var WORLD_SHRINK_CONSTANT = 0.995;
 
 var DIRT = 0;
@@ -37,6 +37,7 @@ var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01], [0.15, 0.10, 0.05], [0.15, 0.1
 var SPAWN_THRESHOLD = 300;
 
 var game_loop;
+var snowballIsDead;
 
 //global variables
 //sprite resources
@@ -44,6 +45,8 @@ var snowballSprite_stage1;
 var snowballSprite_stage2;
 var snowballSprite_stage3;
 var snowballSprite_stage4;
+var snowballSprite_ouch;
+var snowballSprite_die;
 var bunnySpriteLeft;
 var bunnySpriteRight;
 var rockSprite;
@@ -63,6 +66,7 @@ var snowballLevel = 1;
 
 var snowballCharacter;
 var obstacleCharacters;
+var effectCharacters;
 
 //terrain
 var terrainGrid;
@@ -72,6 +76,9 @@ $(document).ready(function(){
 	snowballSprite_stage2 = loadSprite('img/sprites/snowball2/', 12, 50);
 	snowballSprite_stage3 = loadSprite('img/sprites/snowball3/', 12, 50);
 	snowballSprite_stage4 = loadSprite('img/sprites/snowball4/', 12, 50);
+
+	snowballSprite_ouch = loadSprite('img/sprites/ouch/', 4, 150);
+	snowballSprite_die = loadSprite('img/sprites/die/', 11, 100);
 	
 	bunnySpriteLeft = loadSprite('img/sprites/bunny_left/', 2, 800);
 	bunnySpriteRight = loadSprite('img/sprites/bunny_right/', 2, 800);
@@ -87,6 +94,7 @@ $(document).ready(function(){
 });
 
 function initiateGameWorld() {
+	snowballIsDead = false;
 	worldScale = 1.0;
 	snowballCharacter = createCharacter(snowballSprite_stage1, snowballCollisonBox);
 	snowballCharacter.x = (worldW / 2);
@@ -95,6 +103,7 @@ function initiateGameWorld() {
 	snowballCharacter.speedX = 0;
 	
 	obstacleCharacters = new Array();
+	effectCharacters = new Array();
 	
 	terrainGrid = seedTerrain();
 }
@@ -119,36 +128,52 @@ function gameLoop() {
 		if(snowballCharacter.speedX > 0) snowballCharacter.speedX -= 1;
 		if(snowballCharacter.speedX < 0) snowballCharacter.speedX += 1;
 
-		spawnObstacles();
 		stepObstacles();
 		
-		checkBounds(snowballCharacter);
-		checkSnow(terrainGrid, snowballCharacter);
-		
-		snowballCharacter.x += snowballCharacter.speedX;
-		
-		if(worldScale === WORLD_MIN_SCALE) {
-			snowballCharacter.y += snowballCharacter.speedY;
-		} else {
-			terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
-		}		updateSnowballLevel();
-		checkPlayerCollisions();
-		paint();
+		if(!snowballIsDead) {
+			spawnObstacles();
+			
+			checkBounds(snowballCharacter);
+			snowballCharacter.x += snowballCharacter.speedX;
+			
+			if(worldScale === WORLD_MIN_SCALE) {
+				snowballCharacter.y += snowballCharacter.speedY;
+			} else {
+				terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
+			}
+			
+			checkSnow(terrainGrid, snowballCharacter);
+			updateSnowballLevel();
+			checkPlayerCollisions();
+		}
+				paint(snowballIsDead);
 	}
 }
 
 function updateSnowballLevel() {
 
-	if(snowballLevel < 2 && worldScale < KILL_THRESHOLD[BUNNY])	 {
+	if(snowballLevel != 1)	 {
+		MAX_SPEED_Y = 5;
+		MAX_SPEED_Y = 15;
+		snowballCharacter.sprite = snowballSprite_stage1;
+		snowballLevel = 1;
+	}
+	if(snowballLevel != 2 && worldScale < KILL_THRESHOLD[BUNNY])	 {
+		MIN_SPEED_Y = 8;
+		MAX_SPEED_Y = 16;
 		snowballCharacter.sprite = snowballSprite_stage2;
 		snowballLevel = 2;
 	}
-	if(snowballLevel < 3 && worldScale < KILL_THRESHOLD[ROCK])	 {
+	if(snowballLevel != 3 && worldScale < KILL_THRESHOLD[ROCK])	 {
+		MIN_SPEED_Y = 12;
+		MAX_SPEED_Y = 18;
 		snowballCharacter.sprite = snowballSprite_stage3;
 		snowballLevel = 3;
 		
 	}
-	if(snowballLevel < 4 && worldScale < KILL_THRESHOLD[TREE])	 {
+	if(snowballLevel != 4 && worldScale < KILL_THRESHOLD[TREE])	 {
+		MIN_SPEED_Y = 15;
+		MAX_SPEED_Y = 22;
 		snowballCharacter.sprite = snowballSprite_stage4;
 		snowballLevel = 4;
 	}
@@ -206,7 +231,6 @@ function checkSnow(terrainGrid, character) {
 		worldScale = (worldScale * WORLD_SHRINK_CONSTANT) < WORLD_MIN_SCALE ? WORLD_MIN_SCALE : (worldScale * WORLD_SHRINK_CONSTANT);
 	} else {	
 		snowballCharacter.speedY = (snowballCharacter.speedY-1) < minSpeedY ? minSpeedY : (snowballCharacter.speedY-1);
-		//worldScale = (worldScale * WORLD_GROWTH_CONSTANT) > WORLD_MAX_SCALE ? WORLD_MAX_SCALE : (worldScale * WORLD_GROWTH_CONSTANT);
 	}
 	
 }
@@ -262,7 +286,7 @@ function stepObstacles() {
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		obstacleCharacters[i].x += obstacleCharacters[i].speedX;
 		
-		if(worldScale != WORLD_MIN_SCALE) {
+		if(worldScale != WORLD_MIN_SCALE && !snowballIsDead) {
 			obstacleCharacters[i].y -= snowballCharacter.speedY;
 		}
 		
@@ -288,14 +312,50 @@ function checkPlayerCollisions() {
 	var obstaclesToDestroy = new Array();
 	var tempObstacles = new Array();
 	
+	var collided = false;
+	
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		if(checkPlayerCollision(obstacleCharacters[i]))
 		{
+			collided = true;
+	
 			if(worldScale <= KILL_THRESHOLD[obstacleCharacters[i].obstacleType]) {
 				obstaclesToDestroy.push(i);
 			} else {
-				snowballCharacter.speedY = -1;
+				worldScale = (worldScale * WORLD_GROWTH_CONSTANT) > WORLD_MAX_SCALE ? WORLD_MAX_SCALE : (worldScale * WORLD_GROWTH_CONSTANT);
+				
+				if(worldScale === WORLD_MAX_SCALE)
+					snowballIsDead = true;
+				else
+					snowballCharacter.speedY = -10;
 			}
+		}
+	}
+	
+	if(collided) {
+		if(snowballIsDead) {
+			var deathEffect = createCharacter(snowballSprite_die, createCollisonBox(0,0,0,0));
+			deathEffect.x = snowballCharacter.x;
+			deathEffect.y = snowballCharacter.y;
+			effectCharacters.push(deathEffect);
+			
+		} else {
+			snowballCharacter.sprite = snowballSprite_ouch;
+		}
+	} else {
+		switch(snowballLevel) {
+			case 1:
+				snowballCharacter.sprite = snowballSprite_stage1;
+				break;
+			case 2:
+				snowballCharacter.sprite = snowballSprite_stage2;
+				break;
+			case 3:
+				snowballCharacter.sprite = snowballSprite_stage3;
+				break;
+			case 4:
+				snowballCharacter.sprite = snowballSprite_stage4;
+				break;
 		}
 	}
 	

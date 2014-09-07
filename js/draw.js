@@ -20,7 +20,7 @@ function displayImage(image) {
 	ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 }
 
-function paint()
+function paint(snowballIsDead)
 {
 //	ctx.fillStyle = 'white';
 //	ctx.fillRect(0,0, worldW, worldH);
@@ -28,10 +28,14 @@ function paint()
 //	ctx.strokeRect(0,0, worldW, worldH);
 	
 	drawTerrain(ctx, terrainGrid);
-	snowballCharacter.sprite.stepAnimation(REDRAW_MS);
-	snowballCharacter.sprite.draw(ctx, snowballCharacter.x, snowballCharacter.y, 1.0);
+	
+	if(!snowballIsDead) {
+		snowballCharacter.sprite.stepAnimation(REDRAW_MS);
+		snowballCharacter.sprite.draw(ctx, snowballCharacter.x, snowballCharacter.y, 1.0);
+	}
 	
 	drawObstacles();
+	drawEffects();
 	
 	if(DRAW_HITBOXES) {
 		ctx.fillStyle = 'red';
@@ -48,15 +52,41 @@ function drawObstacles() {
 		obstacleCharacters[i].sprite.stepAnimation(REDRAW_MS);
 		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
 		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
+	}
+}
+
+function drawEffects() {
+	var effectsToDestroy = new Array();
+	var tempEffects = new Array();
+	
+	for(var i=0; i<effectCharacters.length; i++) {
+		if(effectCharacters[i].sprite.currentFrame == (effectCharacters[i].sprite.spriteImages.length-1)) {
+			effectCharacters[i].sprite.currentFrame = 0;
+			effectsToDestroy.push(i);
+		} else {
+			effectCharacters[i].sprite.stepAnimation(REDRAW_MS);
+			effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, worldScale);
+			effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, worldScale);
+		}
 
 		if(DRAW_HITBOXES) {
 			ctx.fillStyle = 'red';
 			ctx.fillRect(
-				obstacleCharacters[i].x + obstacleCharacters[i].collisionBox.x*worldScale - ((obstacleCharacters[i].collisionBox.w/2)*worldScale),
-				obstacleCharacters[i].y + obstacleCharacters[i].collisionBox.y*worldScale - ((obstacleCharacters[i].collisionBox.h/2)*worldScale),
-				obstacleCharacters[i].collisionBox.w*worldScale,
-				obstacleCharacters[i].collisionBox.h*worldScale);
+				effectCharacters[i].x + effectCharacters[i].collisionBox.x*worldScale - ((effectCharacters[i].collisionBox.w/2)*worldScale),
+				effectCharacters[i].y + effectCharacters[i].collisionBox.y*worldScale - ((effectCharacters[i].collisionBox.h/2)*worldScale),
+				effectCharacters[i].collisionBox.w*worldScale,
+				effectCharacters[i].collisionBox.h*worldScale);
 		}
+	}
+	
+	if(effectsToDestroy.length > 0) {
+		for(var i=0; i<effectCharacters.length; i++) {
+			if($.inArray(i, effectsToDestroy) === -1) {
+				tempEffects.push(effectCharacters[i]);
+			}
+		}
+		
+		effectCharacters = tempEffects;
 	}
 }
 

@@ -27,6 +27,7 @@ $(document).keydown(function(e){
 			break;
 		case 32: //spacebar
 			initiateGameWorld();
+			stopGameLoop();
 			startGameLoop();
 			break;
 	}
