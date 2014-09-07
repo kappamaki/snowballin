@@ -16,6 +16,10 @@ $(document).ready(function(){
 	canvas.height = worldH;
 });
 
+function displayImage(image) {
+	canvas.drawImage();
+}
+
 function paint()
 {
 //	ctx.fillStyle = 'white';

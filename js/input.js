@@ -19,5 +19,8 @@ $(document).keydown(function(e){
 		case 187: //equals
 			worldScale *= 1.01;
 			break;
+		case 32: //spacebar
+			initiateGame();
+			break;
 	}
 });
