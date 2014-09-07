@@ -9,7 +9,7 @@ var MAX_SPEED_X = 20;
 var MIN_SPEED_Y = 5;
 var MAX_SPEED_Y = 15;
 
-var WORLD_MAX_SCALE = 1.0;
+var WORLD_MAX_SCALE = 0.1;
 var WORLD_MIN_SCALE = 0.05;
 
 var WORLD_GROWTH_CONSTANT = 1.1;
@@ -136,6 +136,7 @@ function gameLoop() {
 		if(snowballCharacter.speedX < 0) snowballCharacter.speedX += 1;
 
 		stepObstacles();
+		stepEffects();
 		
 		if(!snowballIsDead) {
 			checkBounds(snowballCharacter);
@@ -347,6 +348,14 @@ function stepObstacles() {
 	}
 }
 
+function stepEffects() {
+	for(var i=0; i<effectCharacters.length; i++) {
+		if(worldScale != WORLD_MIN_SCALE && !snowballIsDead) {
+			effectCharacters[i].y -= snowballCharacter.speedY;
+		}
+	}
+}
+
 function checkPlayerCollisions() {
 	var obstaclesToDestroy = new Array();
 	var tempObstacles = new Array();
@@ -361,24 +370,28 @@ function checkPlayerCollisions() {
 			if(worldScale <= KILL_THRESHOLD[obstacleCharacters[i].obstacleType]) {
 				obstaclesToDestroy.push(i);
 				obstacleCount[obstacleCharacters[i].obstacleType] -= 1;
-				
+				var deathSprite;
+
 				switch(obstacleCharacters[i].obstacleType) {
 					case BUNNY:
-						var bunnyDeathSprite = loadSprite('img/sprites/bunny_die/', 7, 50);
-						var deathEffect = createCharacter(bunnyDeathSprite, createCollisonBox(0,0,0,0));
-						deathEffect.x = obstacleCharacters[i].x;
-						deathEffect.y = obstacleCharacters[i].y;
-						deathEffect.scaled = true;
-						effectCharacters.push(deathEffect);
+						deathSprite = loadSprite('img/sprites/bunny_die/', 7, 50);
 						playerPoints += 10;
 						break;
 					case ROCK:
+						deathSprite = loadSprite('img/sprites/rock_die/', 6, 50);
 						playerPoints += 100;
 						break;
 					case TREE:
+						deathSprite = loadSprite('img/sprites/tree_die/', 9, 50);
 						playerPoints += 500;
 						break;
 				}
+
+				var deathEffect = createCharacter(deathSprite, createCollisonBox(0,0,0,0));
+				deathEffect.x = obstacleCharacters[i].x;
+				deathEffect.y = obstacleCharacters[i].y;
+				deathEffect.worldEffect = true;
+				effectCharacters.push(deathEffect);
 				
 			} else {
 				worldScale = (worldScale * WORLD_GROWTH_CONSTANT) > WORLD_MAX_SCALE ? WORLD_MAX_SCALE : (worldScale * WORLD_GROWTH_CONSTANT);
@@ -397,7 +410,7 @@ function checkPlayerCollisions() {
 			var deathEffect = createCharacter(snowballSprite_die, createCollisonBox(0,0,0,0));
 			deathEffect.x = snowballCharacter.x;
 			deathEffect.y = snowballCharacter.y;
-			deathEffect.scaled = false;
+			deathEffect.worldEffect = false;
 			effectCharacters.push(deathEffect);
 			
 		} else {

@@ -72,7 +72,7 @@ function drawEffects() {
 			effectsToDestroy.push(i);
 		} else {
 			effectCharacters[i].sprite.stepAnimation(REDRAW_MS);
-			if(effectCharacters[i].scaled) {
+			if(effectCharacters[i].worldEffect) {
 				effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, worldScale);
 			} else {
 				effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, 1.0);
