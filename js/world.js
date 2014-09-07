@@ -40,7 +40,10 @@ var game_loop;
 
 //global variables
 //sprite resources
-var snowballSprite;
+var snowballSprite_stage1;
+var snowballSprite_stage2;
+var snowballSprite_stage3;
+var snowballSprite_stage4;
 var bunnySpriteLeft;
 var bunnySpriteRight;
 var rockSprite;
@@ -56,6 +59,8 @@ var worldW;
 var worldH;
 var worldScale;
 
+var snowballLevel = 1;
+
 var snowballCharacter;
 var obstacleCharacters;
 
@@ -63,7 +68,11 @@ var obstacleCharacters;
 var terrainGrid;
 
 $(document).ready(function(){
-	snowballSprite = loadSprite('img/sprites/snowball/', 12, 50);
+	snowballSprite_stage1 = loadSprite('img/sprites/snowball1/', 12, 50);
+	snowballSprite_stage2 = loadSprite('img/sprites/snowball2/', 12, 50);
+	snowballSprite_stage3 = loadSprite('img/sprites/snowball3/', 12, 50);
+	snowballSprite_stage4 = loadSprite('img/sprites/snowball4/', 12, 50);
+	
 	bunnySpriteLeft = loadSprite('img/sprites/bunny_left/', 2, 800);
 	bunnySpriteRight = loadSprite('img/sprites/bunny_right/', 2, 800);
 	rockSprite = loadSprite('img/sprites/rock/', 1, 0);
@@ -79,7 +88,7 @@ $(document).ready(function(){
 
 function initiateGameWorld() {
 	worldScale = 1.0;
-	snowballCharacter = createCharacter(snowballSprite, snowballCollisonBox);
+	snowballCharacter = createCharacter(snowballSprite_stage1, snowballCollisonBox);
 	snowballCharacter.x = (worldW / 2);
 	snowballCharacter.y = (worldH / 4);
 	snowballCharacter.speedY = MIN_SPEED_Y;
@@ -122,10 +131,26 @@ function gameLoop() {
 			snowballCharacter.y += snowballCharacter.speedY;
 		} else {
 			terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
-		}		
-		paint();
-
+		}		updateSnowballLevel();
 		checkPlayerCollisions();
+		paint();
+	}
+}
+
+function updateSnowballLevel() {
+
+	if(snowballLevel < 2 && worldScale < KILL_THRESHOLD[BUNNY])	 {
+		snowballCharacter.sprite = snowballSprite_stage2;
+		snowballLevel = 2;
+	}
+	if(snowballLevel < 3 && worldScale < KILL_THRESHOLD[ROCK])	 {
+		snowballCharacter.sprite = snowballSprite_stage3;
+		snowballLevel = 3;
+		
+	}
+	if(snowballLevel < 4 && worldScale < KILL_THRESHOLD[TREE])	 {
+		snowballCharacter.sprite = snowballSprite_stage4;
+		snowballLevel = 4;
 	}
 }
 
