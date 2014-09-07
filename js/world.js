@@ -1,4 +1,4 @@
-var DRAW_HITBOXES = false;
+var DRAW_HITBOXES = true;
 
 //constants
 var REDRAW_MS = 50;
@@ -95,21 +95,26 @@ function startGameLoop() {
 }
 
 function gameLoop() {
-	//friction
-	if(snowballCharacter.speedX > 0) snowballCharacter.speedX -= 1;
-	if(snowballCharacter.speedX < 0) snowballCharacter.speedX += 1;
 
-	spawnObstacles();
-	stepObstacles();
-	
-	snowballCharacter.x += snowballCharacter.speedX;
-	checkBounds(snowballCharacter);
-	checkSnow(terrainGrid, snowballCharacter);
-	
-	terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
-	paint();
+	if (!PAUSED)
+	{
+		//friction
+		if(snowballCharacter.speedX > 0) snowballCharacter.speedX -= 1;
+		if(snowballCharacter.speedX < 0) snowballCharacter.speedX += 1;
 
-	checkPlayerCollisions();
+		spawnObstacles();
+		stepObstacles();
+		
+		snowballCharacter.x += snowballCharacter.speedX;
+		checkBounds(snowballCharacter);
+		checkSnow(terrainGrid, snowballCharacter);
+		
+		terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
+		
+		paint();
+
+		checkPlayerCollisions();
+	}
 }
 
 function createCharacter(sprite, collisionBox) {

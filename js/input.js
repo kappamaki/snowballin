@@ -1,3 +1,5 @@
+var PAUSED = false;
+
 $(document).keydown(function(e){
 	var key = e.which;
 	switch(key) {
@@ -13,6 +15,10 @@ $(document).keydown(function(e){
 		case 40: //down/
 			snowballCharacter.speedY = (snowballCharacter.speedY+1) > MAX_SPEED_Y ? MAX_SPEED_Y : (snowballCharacter.speedY+1);
 			break;
+		case 90: //z
+			console.log("Z pressed!");
+			PAUSED = !PAUSED;
+			break;			
 		case 189: //minus
 			worldScale *= 0.99;
 			break;
