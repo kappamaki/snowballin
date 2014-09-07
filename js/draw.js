@@ -103,11 +103,13 @@ function drawEffects() {
 function drawTerrain(context, terrainGrid) {
 	// create a new batch of pixels with the same
     // dimensions as the image:
-    var imageData = context.createImageData(terrainGrid.length, terrainGrid[0].length);
+    var imageData = context.createImageData(worldW, worldH);
     
-    for(var x=0; x<terrainGrid.length; x++) {
-	    for(var y=0; y<terrainGrid[0].length; y++) {
-	    	if(terrainGrid[x][y] === SNOW)
+    for(var x=0; x<worldW; x++) {
+	    for(var y=0; y<worldH; y++) {
+	    	var terrainX = parseInt(x/TERRAIN_SCALE);
+	    	var terrainY = parseInt(y/TERRAIN_SCALE) + TERRAIN_BUFFER;
+	    	if(terrainGrid[terrainX][terrainY] === SNOW)
 				setPixel(imageData, x, y, SNOW_COLOUR[0], SNOW_COLOUR[1], SNOW_COLOUR[2], SNOW_COLOUR[3]);
 			else
 				setPixel(imageData, x, y, DIRT_COLOUR[0], DIRT_COLOUR[1], DIRT_COLOUR[2], DIRT_COLOUR[3]);

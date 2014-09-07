@@ -18,6 +18,8 @@ var WORLD_SHRINK_CONSTANT = 0.995;
 var DIRT = 0;
 var SNOW = 1;
 
+var TERRAIN_SCALE = 2;
+var TERRAIN_BUFFER = 100;
 var TERRAIN_MIN_WIDTH;
 
 var LEVEL0_THRESHOLD = 1.0;
@@ -111,7 +113,7 @@ function initiateGameWorld() {
 	obstacleCharacters = new Array();
 	effectCharacters = new Array();
 	
-	TERRAIN_MIN_WIDTH = 600;
+	TERRAIN_MIN_WIDTH = 300;
 	terrainGrid = seedTerrain();
 }
 
@@ -145,7 +147,7 @@ function gameLoop() {
 			if(worldScale === WORLD_MIN_SCALE) {
 				snowballCharacter.y += snowballCharacter.speedY;
 			} else {
-				terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
+				terrainGrid = shiftTerrain(terrainGrid, parseInt(snowballCharacter.speedY / TERRAIN_SCALE));
 			}
 			
 			checkSnow(terrainGrid, snowballCharacter);
@@ -253,7 +255,10 @@ function checkSnow(terrainGrid, character) {
 	//minSpeedY = Math.max(MAX_SPEED_Y * (WORLD_MIN_SCALE / worldScale), MIN_SPEED_Y);
 	minSpeedY = MIN_SPEED_Y;	maxSpeedY = MAX_SPEED_Y;
 	
-	if(terrainGrid[character.x][character.y] === SNOW)
+	var terrainX = parseInt(character.x/TERRAIN_SCALE);
+	var terrainY = parseInt(character.y/TERRAIN_SCALE) + TERRAIN_BUFFER;
+	
+	if(terrainGrid[terrainX][terrainY] === SNOW)
 	{
 		snowballCharacter.speedY = (snowballCharacter.speedY+1) > maxSpeedY ? maxSpeedY : (snowballCharacter.speedY+1);
 		worldScale = (worldScale * WORLD_SHRINK_CONSTANT) < WORLD_MIN_SCALE ? WORLD_MIN_SCALE : (worldScale * WORLD_SHRINK_CONSTANT);

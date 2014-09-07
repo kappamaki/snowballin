@@ -1,10 +1,13 @@
 function seedTerrain() {
-	var terrainGrid = new Array(worldW);
-	for(var x=0; x<worldW; x++) {
-		terrainGrid[x] = new Array(worldH);
+	var terrainWidth = worldW / TERRAIN_SCALE;
+	var terrainHeight = (worldH / TERRAIN_SCALE) + TERRAIN_BUFFER * 2;
+	
+	var terrainGrid = new Array(terrainWidth);
+	for(var x=0; x<terrainWidth; x++) {
+		terrainGrid[x] = new Array(terrainHeight);
 	}
 	
-	for(var y=0; y<worldH; y++) {
+	for(var y=0; y<terrainHeight; y++) {
 		generateTerrainRow(terrainGrid, y);
 	}
 	
@@ -12,10 +15,12 @@ function seedTerrain() {
 }
 
 function generateFirstTerrainRow(terrainGrid) {
-	var snowStart = (worldW/2) - (TERRAIN_MIN_WIDTH/2); 
-	var snowEnd = (worldW/2) + (TERRAIN_MIN_WIDTH/2); 
+	var terrainWidth = worldW / TERRAIN_SCALE;
 	
-	for(var x=0; x<worldW; x++) {
+	var snowStart = (terrainWidth/2) - (TERRAIN_MIN_WIDTH/2); 
+	var snowEnd = (terrainWidth/2) + (TERRAIN_MIN_WIDTH/2);
+	
+	for(var x=0; x<terrainWidth; x++) {
 		if(x < snowStart || x > snowEnd)
 			terrainGrid[x][0] = DIRT;
 		else
@@ -24,6 +29,8 @@ function generateFirstTerrainRow(terrainGrid) {
 }
 
 function generateTerrainRow(terrainGrid, y) {
+	var terrainWidth = worldW / TERRAIN_SCALE;
+	
 	if(y === 0) {
 		generateFirstTerrainRow(terrainGrid);
 	}
@@ -34,11 +41,11 @@ function generateTerrainRow(terrainGrid, y) {
 		
 		var snowWidth = TERRAIN_MIN_WIDTH * worldScale * (Math.random() * 0.01 + 0.99)
 		
-		for(var x=0; x<worldW; x++) {
+		for(var x=0; x<terrainWidth; x++) {
 			var prevX = x === 0 ? 0 : (x-1);
-			var nextX = x === (worldW-1) ? (worldW-1) : (x+1);
+			var nextX = x === (terrainWidth-1) ? (terrainWidth-1) : (x+1);
 		
-			if(snowStart < 0 && x > (worldW-snowWidth))
+			if(snowStart < 0 && x > (terrainWidth-snowWidth))
 			{
 				terrainGrid[x][y] = SNOW;
 				snowStart = x;				
@@ -47,7 +54,7 @@ function generateTerrainRow(terrainGrid, y) {
 					terrainGrid[x][y] = SNOW;
 					snowStart = x;
 				} else if(terrainGrid[prevX][prevY] ===  SNOW || terrainGrid[x][prevY] === SNOW || terrainGrid[nextX][prevY] === SNOW) {
-					if(Math.floor((Math.random() * 2.6)) == 1) //magic number =(
+					if(Math.floor((Math.random() * 2.65)) == 1) //magic number =(
 					{
 						terrainGrid[x][y] = SNOW;
 						snowStart = x;
@@ -69,18 +76,22 @@ function generateTerrainRow(terrainGrid, y) {
 }
 
 function shiftTerrain(terrainGrid, shiftY) {
-	tempTerrain = new Array(worldW);
-	for(var x=0; x<worldW; x++) {
-		tempTerrain[x] = new Array(worldH);
+	var terrainWidth = worldW / TERRAIN_SCALE;
+	var terrainHeight = (worldH / TERRAIN_SCALE) + TERRAIN_BUFFER * 2;
+	
+	tempTerrain = new Array(terrainWidth);
+	
+	for(var x=0; x<terrainWidth; x++) {
+		tempTerrain[x] = new Array(terrainHeight);
 	}
 	
-	for(var y=shiftY; y<worldH; y++) {
-		for(var x=0; x<worldW; x++) {
+	for(var y=shiftY; y<terrainHeight; y++) {
+		for(var x=0; x<terrainWidth; x++) {
 			tempTerrain[x][y-shiftY] = terrainGrid[x][y];
 		}
 	}
 	
-	for(var y=(worldH-shiftY); y<worldH; y++) {		generateTerrainRow(tempTerrain, y);
+	for(var y=(terrainHeight-shiftY); y<terrainHeight; y++) {		generateTerrainRow(tempTerrain, y);
 	}
 	
 	return tempTerrain;
