@@ -397,10 +397,15 @@ function checkPlayerCollisions() {
 				worldScale = (worldScale * WORLD_GROWTH_CONSTANT) > WORLD_MAX_SCALE ? WORLD_MAX_SCALE : (worldScale * WORLD_GROWTH_CONSTANT);
 				
 				if(worldScale === WORLD_MAX_SCALE)
+				{
 					snowballIsDead = true;
-				else
+				} else {
 					snowballCharacter.speedY = -MAX_SPEED_Y;
+				}
 			}
+				
+			audioPlayer_impactEffect.currentTime = 0;
+			audioPlayer_impactEffect.play();
 		}
 	}
 	
