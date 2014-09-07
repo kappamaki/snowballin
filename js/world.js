@@ -23,7 +23,7 @@ var TERRAIN_MIN_WIDTH = 600;
 var LEVEL0_THRESHOLD = 1.0;
 var LEVEL1_THRESHOLD = 0.4;
 var LEVEL2_THRESHOLD = 0.2;
-var BUNNY_SPEED = 5;
+var BUNNY_SPEED = 10;
 
 var BUNNY = 0;
 var ROCK = 1;
@@ -31,7 +31,7 @@ var TREE = 2;
 
 var KILL_THRESHOLD = [0.5, 0.2, 0.09];
 
-var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15] ];
+var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15], [0.25, 0.25, 0.25]];
 //var OBSTACLE_SPAWN_CHANCE = [ [0.0, 0.00, 0.1], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15] ];
 
 var SPAWN_THRESHOLD = 300;
@@ -236,12 +236,7 @@ function checkSnow(terrainGrid, character) {
 }
 
 function spawnObstacles() {
-	var level;
-	if(worldScale <= LEVEL0_THRESHOLD) level = 0;
-	if(worldScale <= LEVEL1_THRESHOLD) level = 1;
-	if(worldScale <= LEVEL2_THRESHOLD) level = 2;
-	
-	if(Math.random() < OBSTACLE_SPAWN_CHANCE[level][BUNNY])
+	if(Math.random() < OBSTACLE_SPAWN_CHANCE[snowballLevel-1][BUNNY])
 	{
 		var newCharacter;
 		var xPos = Math.random() * worldW;
@@ -258,7 +253,7 @@ function spawnObstacles() {
 		obstacleCharacters.push(newCharacter);
 	}
 
-	if(Math.random() < OBSTACLE_SPAWN_CHANCE[level][ROCK])
+	if(Math.random() < OBSTACLE_SPAWN_CHANCE[snowballLevel-1][ROCK])
 	{
 		var newCharacter;
 		newCharacter = createCharacter(rockSprite, rockCollisonBox);
@@ -268,7 +263,7 @@ function spawnObstacles() {
 		obstacleCharacters.push(newCharacter);
 	}
 	
-	if(Math.random() < OBSTACLE_SPAWN_CHANCE[level][TREE])
+	if(Math.random() < OBSTACLE_SPAWN_CHANCE[snowballLevel-1][TREE])
 	{
 		var newCharacter;
 		newCharacter = createCharacter(treeSprite, treeCollisonBox);
@@ -284,7 +279,7 @@ function stepObstacles() {
 	var tempObstacles = new Array();
 	
 	for(var i=0; i<obstacleCharacters.length; i++) {
-		obstacleCharacters[i].x += obstacleCharacters[i].speedX;
+		obstacleCharacters[i].x += obstacleCharacters[i].speedX * worldScale;
 		
 		if(worldScale != WORLD_MIN_SCALE && !snowballIsDead) {
 			obstacleCharacters[i].y -= snowballCharacter.speedY;
