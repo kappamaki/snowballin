@@ -181,18 +181,22 @@ function gameLoop() {
 	
 	if(snowballIsVictorious && gameState !== VICTORY) {
 		gameState = VICTORY;
-		setTimeout(victory, 8000);
+		setTimeout(victory, 5000);
 	}
 }
 
 function gameOver() {
 	stopGameLoop();
+	musicPlayer.src = 'mus/game_over.mp3';
+	musicPlayer.load();
+	musicPlayer.play();
 	
 	splashImage = new Image();
-	splashImage.src = 'img/splash_lose.png';
+	splashImage.src = 'img/splash_lose.jpg';
 	var onloadCallback = function showSplashScreen() {
 		displayImage(splashImage)
 		drawScore();
+		gameState = GAME_OVER;
 	};
 	splashImage.onload = onloadCallback;
 }
@@ -205,6 +209,7 @@ function victory() {
 	var onloadCallback = function showSplashScreen() {
 		displayImage(splashImage)
 		drawScore();
+		gameState = VICTORY;
 	};
 	splashImage.onload = onloadCallback;
 }

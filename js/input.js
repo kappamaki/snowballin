@@ -15,6 +15,12 @@ $(document).keydown(function(e){
 	if(key === 40) { //down/
 		snowballCharacter.speedY = (snowballCharacter.speedY+MOVEMENT) > MAX_SPEED_Y ? MAX_SPEED_Y : (snowballCharacter.speedY+MOVEMENT);
 	}
+	if(key === 192) { //grave
+		if(WORLD_MAX_SCALE === 1.0)
+			WORLD_MAX_SCALE = 0.2;
+		else
+			WORLD_MAX_SCALE = 1.0;
+	}
 	if(key === 90) { //z
 		console.log("Z pressed!");
 		PAUSED = !PAUSED;
