@@ -45,6 +45,14 @@ function paint(snowballIsDead)
 			snowballCharacter.collisionBox.w,
 			snowballCharacter.collisionBox.h);
 	}
+	
+	ctx.lineWidth = 2;
+	ctx.textAlign = 'right';
+	ctx.fillStyle = 'blue';
+	ctx.strokeStyle = 'black';
+	ctx.font="32pt Comic Sans MS"
+	ctx.fillText(parseInt(playerPoints), 950, 50, 100)
+	ctx.strokeText(parseInt(playerPoints), 950, 50, 100)
 }
 
 function drawObstacles() {
@@ -61,12 +69,14 @@ function drawEffects() {
 	
 	for(var i=0; i<effectCharacters.length; i++) {
 		if(effectCharacters[i].sprite.currentFrame == (effectCharacters[i].sprite.spriteImages.length-1)) {
-			effectCharacters[i].sprite.currentFrame = 0;
 			effectsToDestroy.push(i);
 		} else {
 			effectCharacters[i].sprite.stepAnimation(REDRAW_MS);
-			effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, worldScale);
-			effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, worldScale);
+			if(effectCharacters[i].scaled) {
+				effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, worldScale);
+			} else {
+				effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, 1.0);
+			}
 		}
 
 		if(DRAW_HITBOXES) {
