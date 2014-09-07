@@ -26,15 +26,18 @@ var LEVEL0_THRESHOLD = 1.0;
 var LEVEL1_THRESHOLD = 0.4;
 var LEVEL2_THRESHOLD = 0.2;
 var BUNNY_SPEED = 10;
+var SKIER_SPEED_X = 7;
+var SKIER_SPEED_Y = 7;
 
 var BUNNY = 0;
 var ROCK = 1;
 var TREE = 2;
+var SKIER = 3;
 
-var KILL_THRESHOLD = [0.5, 0.2, 0.09];
+var KILL_THRESHOLD = [0.5, 0.2, 0.09, 0.2];
 
-var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15], [0.25, 0.25, 0.25]];
-var OBSTACLE_SPAWN_LIMIT = [ [20, 5, 2], [300, 10, 5], [5000, 50, 30], [5000, 5000, 5000]];
+var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01, 0.01], [0.15, 0.10, 0.05, 0.02], [0.15, 0.15, 0.15, 0.03], [0.25, 0.25, 0.25, 0.05]];
+var OBSTACLE_SPAWN_LIMIT = [ [20, 5, 2, 3], [300, 10, 5, 10], [5000, 50, 30, 5000], [5000, 5000, 5000, 5000]];
 
 var SPAWN_THRESHOLD = 300;
 
@@ -52,12 +55,15 @@ var bunnySpriteLeft;
 var bunnySpriteRight;
 var rockSprite;
 var treeSprite;
+var skierSpriteLeft;
+var skierSpriteRight;
 
 //collision boxes for sprites
 var snowballCollisonBox;
 var bunnyCollisonBox;
 var rockCollisonBox;
 var treeCollisonBox;
+var skierCollisonBox;
 
 var worldW;
 var worldH;
@@ -87,11 +93,14 @@ $(document).ready(function(){
 	bunnySpriteRight = loadSprite('img/sprites/bunny_right/', 2, 800);
 	rockSprite = loadSprite('img/sprites/rock/', 1, 0);
 	treeSprite = loadSprite('img/sprites/tree/', 1, 0);
+	skierSpriteLeft = loadSprite('img/sprites/skier_left/', 2, 800);
+	skierSpriteRight = loadSprite('img/sprites/skier_right/', 2, 800);
 
 	snowballCollisonBox = createCollisonBox(0,0,50,62);
 	bunnyCollisonBox = createCollisonBox(0,0,80,50);
 	rockCollisonBox = createCollisonBox(0,10,230,130);
 	treeCollisonBox = createCollisonBox(0,300,500,200);
+	skierCollisonBox = createCollisonBox(0,50,160,100);
 	
 	initiateGameWorld();
 });
@@ -109,7 +118,7 @@ function initiateGameWorld() {
 	snowballCharacter.speedY = MIN_SPEED_Y;
 	snowballCharacter.speedX = 0;
 	
-	obstacleCount = [0, 0, 0];
+	obstacleCount = [0, 0, 0, 0];
 	obstacleCharacters = new Array();
 	effectCharacters = new Array();
 	
@@ -321,6 +330,29 @@ function spawnObstacles(verticalSpeed) {
 			obstacleCount[TREE] += 1;
 		}
 	}
+
+	if(Math.random() < OBSTACLE_SPAWN_CHANCE[snowballLevel-1][SKIER] * spawnChanceModifier)
+	{
+		if(obstacleCount[SKIER] < OBSTACLE_SPAWN_LIMIT[snowballLevel-1][SKIER])
+		{
+			var newCharacter;
+			var xPos = Math.random() * worldW;
+			if(xPos < worldW/2.0) {
+				newCharacter = createCharacter(skierSpriteLeft, skierCollisonBox);
+				newCharacter.speedX = SKIER_SPEED_X;
+				newCharacter.speedY = SKIER_SPEED_Y;
+			} else {
+				newCharacter = createCharacter(skierSpriteRight, skierCollisonBox);
+				newCharacter.speedX = -SKIER_SPEED_X;
+				newCharacter.speedY = SKIER_SPEED_Y;
+			}
+			newCharacter.obstacleType = SKIER;
+			newCharacter.x = xPos
+			newCharacter.y = worldH + SPAWN_THRESHOLD;
+			obstacleCharacters.push(newCharacter);
+			obstacleCount[SKIER] += 1;
+		}
+	}
 }
 
 function stepObstacles() {
@@ -329,6 +361,7 @@ function stepObstacles() {
 	
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		obstacleCharacters[i].x += obstacleCharacters[i].speedX * worldScale;
+		obstacleCharacters[i].y += obstacleCharacters[i].speedY * worldScale;
 		
 		if(worldScale != WORLD_MIN_SCALE && !snowballIsDead) {
 			obstacleCharacters[i].y -= snowballCharacter.speedY;
@@ -389,6 +422,10 @@ function checkPlayerCollisions() {
 					case TREE:
 						deathSprite = loadSprite('img/sprites/tree_die/', 9, 50);
 						playerPoints += 500;
+						break;
+					case SKIER:
+						deathSprite = loadSprite('img/sprites/rock_die/', 7, 50);
+						playerPoints += 2000;
 						break;
 				}
 

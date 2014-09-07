@@ -60,6 +60,15 @@ function drawObstacles() {
 		obstacleCharacters[i].sprite.stepAnimation(REDRAW_MS);
 		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
 		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
+
+		if(DRAW_HITBOXES) {
+			ctx.fillStyle = 'red';
+			ctx.fillRect(
+				obstacleCharacters[i].x + obstacleCharacters[i].collisionBox.x * worldScale - ((obstacleCharacters[i].collisionBox.w/2) * worldScale),
+				obstacleCharacters[i].y + obstacleCharacters[i].collisionBox.y * worldScale - ((obstacleCharacters[i].collisionBox.h/2) * worldScale),
+				obstacleCharacters[i].collisionBox.w * worldScale,
+				obstacleCharacters[i].collisionBox.h * worldScale);
+		}
 	}
 }
 
