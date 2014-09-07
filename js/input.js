@@ -20,7 +20,9 @@ $(document).keydown(function(e){
 			worldScale *= 1.01;
 			break;
 		case 32: //spacebar
-			initiateGame();
+			clearInterval(game_loop);
+			initiateGameWorld();
+			startGameLoop();
 			break;
 	}
 });
