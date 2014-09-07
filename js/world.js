@@ -92,6 +92,14 @@ function initiateGameWorld() {
 
 function startGameLoop() {
 	game_loop = setInterval(gameLoop, REDRAW_MS);
+	musicPlayer.src = 'mus/jaunty_gumption.mp3';
+	musicPlayer.load();
+	musicPlayer.play();
+}
+
+function stopGameLoop() {
+	clearInterval(game_loop);
+	musicPlayer.pause();
 }
 
 function gameLoop() {

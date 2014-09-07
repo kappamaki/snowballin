@@ -17,7 +17,7 @@ $(document).ready(function(){
 });
 
 function displayImage(image) {
-	canvas.drawImage();
+	ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 }
 
 function paint()
