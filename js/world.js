@@ -3,6 +3,8 @@ var DRAW_HITBOXES = false;
 //constants
 var REDRAW_MS = 50;
 
+var GODMODE = false;
+
 var MOVEMENT = 3;
 
 var MAX_SPEED_X = 20;
@@ -12,32 +14,38 @@ var MAX_SPEED_Y = 15;
 var WORLD_MAX_SCALE = 1.0;
 var WORLD_MIN_SCALE = 0.05;
 
-var WORLD_GROWTH_CONSTANT = 1.1;
+var WORLD_GROWTH_CONSTANT = 1.15;
 var WORLD_SHRINK_CONSTANT = 0.995;
 
 var DIRT = 0;
 var SNOW = 1;
 
+var TERRAIN_SCALE = 2;
+var TERRAIN_BUFFER = 100;
 var TERRAIN_MIN_WIDTH;
 
 var LEVEL0_THRESHOLD = 1.0;
 var LEVEL1_THRESHOLD = 0.4;
 var LEVEL2_THRESHOLD = 0.2;
 var BUNNY_SPEED = 10;
+var SKIER_SPEED_X = 7;
+var SKIER_SPEED_Y = 7;
 
 var BUNNY = 0;
 var ROCK = 1;
 var TREE = 2;
+var SKIER = 3;
 
-var KILL_THRESHOLD = [0.5, 0.2, 0.09];
+var KILL_THRESHOLD = [0.5, 0.2, 0.09, 0.2];
 
-var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15], [0.25, 0.25, 0.25]];
-var OBSTACLE_SPAWN_LIMIT = [ [20, 5, 2], [300, 10, 5], [5000, 50, 30], [5000, 5000, 5000]];
+var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01, 0.01], [0.15, 0.10, 0.05, 0.02], [0.15, 0.15, 0.15, 0.03], [0.25, 0.25, 0.25, 0.05]];
+var OBSTACLE_SPAWN_LIMIT = [ [20, 5, 2, 3], [300, 10, 5, 10], [5000, 50, 30, 5000], [5000, 5000, 5000, 5000]];
 
 var SPAWN_THRESHOLD = 300;
 
 var game_loop;
 var snowballIsDead;
+var snowballIsVictorious;
 
 //global variables
 //sprite resources
@@ -50,12 +58,15 @@ var bunnySpriteLeft;
 var bunnySpriteRight;
 var rockSprite;
 var treeSprite;
+var skierSpriteLeft;
+var skierSpriteRight;
 
 //collision boxes for sprites
 var snowballCollisonBox;
 var bunnyCollisonBox;
 var rockCollisonBox;
 var treeCollisonBox;
+var skierCollisonBox;
 
 var worldW;
 var worldH;
@@ -85,17 +96,21 @@ $(document).ready(function(){
 	bunnySpriteRight = loadSprite('img/sprites/bunny_right/', 2, 800);
 	rockSprite = loadSprite('img/sprites/rock/', 1, 0);
 	treeSprite = loadSprite('img/sprites/tree/', 1, 0);
+	skierSpriteLeft = loadSprite('img/sprites/skier_left/', 2, 800);
+	skierSpriteRight = loadSprite('img/sprites/skier_right/', 2, 800);
 
 	snowballCollisonBox = createCollisonBox(0,0,50,62);
 	bunnyCollisonBox = createCollisonBox(0,0,80,50);
 	rockCollisonBox = createCollisonBox(0,10,230,130);
 	treeCollisonBox = createCollisonBox(0,300,500,200);
+	skierCollisonBox = createCollisonBox(0,50,160,100);
 	
 	initiateGameWorld();
 });
 
 function initiateGameWorld() {
 	snowballIsDead = false;
+	snowballIsVictorious = false;
 	snowballLevel = 1;
 	snowballHighestLevelAchieved = 1;
 	playerPoints = 0.0;
@@ -107,15 +122,16 @@ function initiateGameWorld() {
 	snowballCharacter.speedY = MIN_SPEED_Y;
 	snowballCharacter.speedX = 0;
 	
-	obstacleCount = [0, 0, 0];
+	obstacleCount = [0, 0, 0, 0];
 	obstacleCharacters = new Array();
 	effectCharacters = new Array();
 	
-	TERRAIN_MIN_WIDTH = 600;
+	TERRAIN_MIN_WIDTH = 300;
 	terrainGrid = seedTerrain();
 }
 
 function startGameLoop() {
+	gameState = PLAYING;
 	game_loop = setInterval(gameLoop, REDRAW_MS);
 	musicPlayer.src = 'mus/jaunty_gumption.mp3';
 	musicPlayer.load();
@@ -143,9 +159,10 @@ function gameLoop() {
 			snowballCharacter.x += snowballCharacter.speedX;
 			
 			if(worldScale === WORLD_MIN_SCALE) {
+				snowballIsVictorious = true;
 				snowballCharacter.y += snowballCharacter.speedY;
 			} else {
-				terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
+				terrainGrid = shiftTerrain(terrainGrid, parseInt(snowballCharacter.speedY / TERRAIN_SCALE));
 			}
 			
 			checkSnow(terrainGrid, snowballCharacter);
@@ -158,7 +175,50 @@ function gameLoop() {
 		}
 				paint(snowballIsDead);
 	}
+	
+	if(snowballIsDead && gameState !== GAME_OVER) {
+		gameState = GAME_OVER;
+		setTimeout(gameOver, 1500);
+	}
+	
+	if(snowballIsVictorious && gameState !== VICTORY) {
+		gameState = VICTORY;
+		setTimeout(victory, 2500);
+	}
 }
+
+function gameOver() {
+	stopGameLoop();
+	musicPlayer.src = 'mus/game_over.mp3';
+	musicPlayer.load();
+	musicPlayer.play();
+	
+	splashImage = new Image();
+	splashImage.src = 'img/splash_lose.jpg';
+	var onloadCallback = function showSplashScreen() {
+		displayImage(splashImage)
+		drawScore();
+		gameState = SPLASH;
+	};
+	splashImage.onload = onloadCallback;
+}
+
+function victory() {
+	stopGameLoop();
+	musicPlayer.src = 'mus/victory.mp3';
+	musicPlayer.load();
+	musicPlayer.play();
+
+	splashImage = new Image();
+	splashImage.src = 'img/splash_win.png';
+	var onloadCallback = function showSplashScreen() {
+		displayImage(splashImage)
+		drawScore();
+		gameState = SPLASH;
+	};
+	splashImage.onload = onloadCallback;
+}
+
 
 function updateSnowballLevel() {
 
@@ -253,7 +313,10 @@ function checkSnow(terrainGrid, character) {
 	//minSpeedY = Math.max(MAX_SPEED_Y * (WORLD_MIN_SCALE / worldScale), MIN_SPEED_Y);
 	minSpeedY = MIN_SPEED_Y;	maxSpeedY = MAX_SPEED_Y;
 	
-	if(terrainGrid[character.x][character.y] === SNOW)
+	var terrainX = parseInt(character.x/TERRAIN_SCALE);
+	var terrainY = parseInt(character.y/TERRAIN_SCALE) + TERRAIN_BUFFER;
+	
+	if(terrainGrid[terrainX][terrainY] === SNOW)
 	{
 		snowballCharacter.speedY = (snowballCharacter.speedY+1) > maxSpeedY ? maxSpeedY : (snowballCharacter.speedY+1);
 		worldScale = (worldScale * WORLD_SHRINK_CONSTANT) < WORLD_MIN_SCALE ? WORLD_MIN_SCALE : (worldScale * WORLD_SHRINK_CONSTANT);
@@ -316,6 +379,29 @@ function spawnObstacles(verticalSpeed) {
 			obstacleCount[TREE] += 1;
 		}
 	}
+
+	if(Math.random() < OBSTACLE_SPAWN_CHANCE[snowballLevel-1][SKIER] * spawnChanceModifier)
+	{
+		if(obstacleCount[SKIER] < OBSTACLE_SPAWN_LIMIT[snowballLevel-1][SKIER])
+		{
+			var newCharacter;
+			var xPos = Math.random() * worldW;
+			if(xPos < worldW/2.0) {
+				newCharacter = createCharacter(skierSpriteLeft, skierCollisonBox);
+				newCharacter.speedX = SKIER_SPEED_X;
+				newCharacter.speedY = SKIER_SPEED_Y;
+			} else {
+				newCharacter = createCharacter(skierSpriteRight, skierCollisonBox);
+				newCharacter.speedX = -SKIER_SPEED_X;
+				newCharacter.speedY = SKIER_SPEED_Y;
+			}
+			newCharacter.obstacleType = SKIER;
+			newCharacter.x = xPos
+			newCharacter.y = worldH + SPAWN_THRESHOLD;
+			obstacleCharacters.push(newCharacter);
+			obstacleCount[SKIER] += 1;
+		}
+	}
 }
 
 function stepObstacles() {
@@ -324,6 +410,7 @@ function stepObstacles() {
 	
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		obstacleCharacters[i].x += obstacleCharacters[i].speedX * worldScale;
+		obstacleCharacters[i].y += obstacleCharacters[i].speedY * worldScale;
 		
 		if(worldScale != WORLD_MIN_SCALE && !snowballIsDead) {
 			obstacleCharacters[i].y -= snowballCharacter.speedY;
@@ -367,7 +454,7 @@ function checkPlayerCollisions() {
 		{
 			collided = true;
 	
-			if(worldScale <= KILL_THRESHOLD[obstacleCharacters[i].obstacleType]) {
+			if(worldScale <= KILL_THRESHOLD[obstacleCharacters[i].obstacleType] || GODMODE) {
 				obstaclesToDestroy.push(i);
 				obstacleCount[obstacleCharacters[i].obstacleType] -= 1;
 				var deathSprite;
@@ -385,6 +472,10 @@ function checkPlayerCollisions() {
 						deathSprite = loadSprite('img/sprites/tree_die/', 9, 50);
 						playerPoints += 500;
 						break;
+					case SKIER:
+						deathSprite = loadSprite('img/sprites/skier_die/', 6, 50);
+						playerPoints += 2000;
+						break;
 				}
 
 				var deathEffect = createCharacter(deathSprite, createCollisonBox(0,0,0,0));
@@ -400,7 +491,7 @@ function checkPlayerCollisions() {
 				{
 					snowballIsDead = true;
 				} else {
-					snowballCharacter.speedY = -MAX_SPEED_Y;
+					setSpeedAfterCollision(obstacleCharacters[i]);
 				}
 			}
 				
@@ -464,4 +555,16 @@ function checkPlayerCollision(obstacle) {
 	        || obstacleRightX < snowballLeftX
 	        || obstacleTopY > snowballBottomY
 	        || obstacleBottomY < snowballTopY);	
+}
+
+function setSpeedAfterCollision(obstacle) {
+	var vectorX = snowballCharacter.x - obstacle.x;
+	var vectorY = snowballCharacter.y - obstacle.y;
+	
+	var vectorAbs = Math.sqrt(vectorX*vectorX + vectorY*vectorY);
+	vectorX /= vectorAbs;
+	vectorY /= vectorAbs;
+	
+	snowballCharacter.speedX = vectorX * MAX_SPEED_X;
+	snowballCharacter.speedY = vectorY * MAX_SPEED_Y;
 }
