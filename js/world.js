@@ -1,4 +1,4 @@
-var DRAW_HITBOXES = true;
+var DRAW_HITBOXES = false;
 
 //constants
 var REDRAW_MS = 50;
@@ -17,6 +17,7 @@ var WORLD_SHRINK_CONSTANT = 0.995;
 
 var DIRT = 0;
 var SNOW = 1;
+var CLIFF = 2;
 
 var TERRAIN_MIN_WIDTH = 600;
 
@@ -29,7 +30,7 @@ var BUNNY = 0;
 var ROCK = 1;
 var TREE = 2;
 
-var KILL_THRESHOLD = [0.5, 0.2, 0.05];
+var KILL_THRESHOLD = [0.5, 0.2, 0.09];
 
 var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15] ];
 //var OBSTACLE_SPAWN_CHANCE = [ [0.0, 0.00, 0.1], [0.15, 0.10, 0.05], [0.15, 0.15, 0.15] ];
@@ -72,7 +73,7 @@ $(document).ready(function(){
 	snowballCollisonBox = createCollisonBox(0,0,50,62);
 	bunnyCollisonBox = createCollisonBox(0,0,80,50);
 	rockCollisonBox = createCollisonBox(0,10,230,130);
-	treeCollisonBox = createCollisonBox(0,300,600,200);
+	treeCollisonBox = createCollisonBox(0,300,500,200);
 	
 	initiateGameWorld();
 });
@@ -105,12 +106,16 @@ function gameLoop() {
 		spawnObstacles();
 		stepObstacles();
 		
-		snowballCharacter.x += snowballCharacter.speedX;
 		checkBounds(snowballCharacter);
 		checkSnow(terrainGrid, snowballCharacter);
 		
-		terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
+		snowballCharacter.x += snowballCharacter.speedX;
 		
+		if(worldScale === WORLD_MIN_SCALE) {
+			snowballCharacter.y += snowballCharacter.speedY;
+		} else {
+			terrainGrid = shiftTerrain(terrainGrid, snowballCharacter.speedY);
+		}		
 		paint();
 
 		checkPlayerCollisions();
@@ -224,11 +229,16 @@ function stepObstacles() {
 	
 	for(var i=0; i<obstacleCharacters.length; i++) {
 		obstacleCharacters[i].x += obstacleCharacters[i].speedX;
-		obstacleCharacters[i].y -= snowballCharacter.speedY;
+		
+		if(worldScale != WORLD_MIN_SCALE) {
+			obstacleCharacters[i].y -= snowballCharacter.speedY;
+		}
 		
 		//despawn
-		if(obstacleCharacters[i].y + SPAWN_THRESHOLD < 0)
+		if(obstacleCharacters[i].y + SPAWN_THRESHOLD < 0 || obstacleCharacters[i].x + SPAWN_THRESHOLD < 0 || obstacleCharacters[i].x - SPAWN_THRESHOLD > worldW)
+		{
 			obstaclesToDestroy.push(i);
+		}
 	}
 	
 	if(obstaclesToDestroy.length > 0) {
@@ -252,7 +262,7 @@ function checkPlayerCollisions() {
 			if(worldScale <= KILL_THRESHOLD[obstacleCharacters[i].obstacleType]) {
 				obstaclesToDestroy.push(i);
 			} else {
-				snowballCharacter.speedY = -50;
+				snowballCharacter.speedY = -1;
 			}
 		}
 	}
@@ -269,16 +279,18 @@ function checkPlayerCollisions() {
 }
 
 function checkPlayerCollision(obstacle) {
-	var obstacleX = obstacle.x + obstacle.collisionBox.x*worldScale - (obstacle.collisionBox.w*worldScale/2);
-	var obstacleY = obstacle.y + obstacle.collisionBox.y*worldScale - (obstacle.collisionBox.h*worldScale/2);
-	var obstacleW = obstacle.collisionBox.w*worldScale;
-	var obstacleH = obstacle.collisionBox.h*worldScale;
+	var obstacleLeftX = obstacle.x + obstacle.collisionBox.x*worldScale - (obstacle.collisionBox.w*worldScale/2);
+	var obstacleTopY = obstacle.y + obstacle.collisionBox.y*worldScale - (obstacle.collisionBox.h*worldScale/2);
+	var obstacleRightX = obstacleLeftX + obstacle.collisionBox.w*worldScale;
+	var obstacleBottomY = obstacleTopY + obstacle.collisionBox.h*worldScale;
 
-	var snowballX = snowballCharacter.x + snowballCharacter.collisionBox.x - ((snowballCharacter.collisionBox.w/2));
-	var snowballY = snowballCharacter.y + snowballCharacter.collisionBox.y - ((snowballCharacter.collisionBox.h/2));
-	var snowballW = snowballCharacter.collisionBox.w;
-	var snowballH = snowballCharacter.collisionBox.h;
-	
-	return (Math.abs(snowballX - obstacleX) * 2 < (snowballW + obstacleW)) &&
-			(Math.abs(snowballY - obstacleY) * 2 < (snowballH + obstacleH));
+	var snowballLeftX = snowballCharacter.x + snowballCharacter.collisionBox.x - ((snowballCharacter.collisionBox.w/2));
+	var snowballTopY = snowballCharacter.y + snowballCharacter.collisionBox.y - ((snowballCharacter.collisionBox.h/2));
+	var snowballRightX = snowballLeftX + snowballCharacter.collisionBox.w;
+	var snowballBottomY = snowballTopY + snowballCharacter.collisionBox.h;
+
+	return !(obstacleLeftX > snowballRightX
+	        || obstacleRightX < snowballLeftX
+	        || obstacleTopY > snowballBottomY
+	        || obstacleBottomY < snowballTopY);	
 }
