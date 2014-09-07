@@ -9,7 +9,7 @@ var MAX_SPEED_X = 20;
 var MIN_SPEED_Y = 5;
 var MAX_SPEED_Y = 15;
 
-var WORLD_MAX_SCALE = 0.1;
+var WORLD_MAX_SCALE = 1.0;
 var WORLD_MIN_SCALE = 0.05;
 
 var WORLD_GROWTH_CONSTANT = 1.1;
