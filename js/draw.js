@@ -30,8 +30,8 @@ function paint(snowballIsDead)
 	drawTerrain(ctx, terrainGrid);
 	
 	if(!snowballIsDead) {
-		snowballCharacter.sprite.stepAnimation(REDRAW_MS);
-		snowballCharacter.sprite.draw(ctx, snowballCharacter.x, snowballCharacter.y, 1.0);
+		snowballCharacter.stepAnimation(REDRAW_MS);
+		snowballCharacter.draw(ctx, snowballCharacter.x, snowballCharacter.y, 1.0);
 	}
 	
 	drawObstacles();
@@ -61,9 +61,8 @@ function drawScore() {
 
 function drawObstacles() {
 	for(var i=0; i<obstacleCharacters.length; i++) {
-		obstacleCharacters[i].sprite.stepAnimation(REDRAW_MS);
-		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
-		obstacleCharacters[i].sprite.draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
+		obstacleCharacters[i].stepAnimation(REDRAW_MS);
+		obstacleCharacters[i].draw(ctx, obstacleCharacters[i].x, obstacleCharacters[i].y, worldScale);
 
 		if(DRAW_HITBOXES) {
 			ctx.fillStyle = 'red';
@@ -81,14 +80,14 @@ function drawEffects() {
 	var tempEffects = new Array();
 	
 	for(var i=0; i<effectCharacters.length; i++) {
-		if(effectCharacters[i].sprite.currentFrame == (effectCharacters[i].sprite.spriteImages.length-1)) {
+		if(effectCharacters[i].currentFrame == (effectCharacters[i].sprite.spriteImages.length-1)) {
 			effectsToDestroy.push(i);
 		} else {
-			effectCharacters[i].sprite.stepAnimation(REDRAW_MS);
+			effectCharacters[i].stepAnimation(REDRAW_MS);
 			if(effectCharacters[i].worldEffect) {
-				effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, worldScale);
+				effectCharacters[i].draw(ctx, effectCharacters[i].x, effectCharacters[i].y, worldScale);
 			} else {
-				effectCharacters[i].sprite.draw(ctx, effectCharacters[i].x, effectCharacters[i].y, 1.0);
+				effectCharacters[i].draw(ctx, effectCharacters[i].x, effectCharacters[i].y, 1.0);
 			}
 		}
 

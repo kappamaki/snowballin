@@ -54,12 +54,17 @@ var snowballSprite_stage2;
 var snowballSprite_stage3;
 var snowballSprite_stage4;
 var snowballSprite_ouch;
+var snowballSprite_die;
 var bunnySpriteLeft;
 var bunnySpriteRight;
+var bunnySprite_die;
 var rockSprite;
+var rockSprite_die;
 var treeSprite;
+var treeSprite_die;
 var skierSpriteLeft;
 var skierSpriteRight;
+var skierSprite_die;
 
 //collision boxes for sprites
 var snowballCollisonBox;
@@ -92,12 +97,19 @@ $(document).ready(function(){
 	snowballSprite_stage4 = loadSprite('img/sprites/snowball4/', 12, 50);
 
 	snowballSprite_ouch = loadSprite('img/sprites/ouch/', 4, 150);
+ 	snowballSprite_die = loadSprite('img/sprites/die/', 11, 100);
+
 	bunnySpriteLeft = loadSprite('img/sprites/bunny_left/', 2, 800);
 	bunnySpriteRight = loadSprite('img/sprites/bunny_right/', 2, 800);
 	rockSprite = loadSprite('img/sprites/rock/', 1, 0);
 	treeSprite = loadSprite('img/sprites/tree/', 1, 0);
 	skierSpriteLeft = loadSprite('img/sprites/skier_left/', 2, 800);
 	skierSpriteRight = loadSprite('img/sprites/skier_right/', 2, 800);
+						
+	bunnySprite_die = loadSprite('img/sprites/bunny_die/', 7, 50);
+	rockSprite_die = loadSprite('img/sprites/rock_die/', 6, 50);
+	treeSprite_die = loadSprite('img/sprites/tree_die/', 9, 50);
+	skierSprite_die = loadSprite('img/sprites/skier_die/', 6, 50);
 
 	snowballCollisonBox = createCollisonBox(0,0,50,62);
 	bunnyCollisonBox = createCollisonBox(0,0,80,50);
@@ -276,14 +288,37 @@ function createCharacter(sprite, collisionBox) {
 		sprite: sprite,
 
 		width: function() {
-			return this.sprite.getCurrentFrameImage().width;
+			return this.getCurrentFrameImage().width;
 		},
 
 		height: function() {
-			return this.sprite.getCurrentFrameImage().height;
+			return this.getCurrentFrameImage().height;
 		},
 		
-		collisionBox: collisionBox
+		collisionBox: collisionBox,
+		
+		currentFrame: 0,
+		currentTicks: 0, 
+
+		stepAnimation: function(ticks) {
+			this.currentTicks += ticks;
+			
+			if(this.currentTicks >= this.sprite.ticksPerFrame) {
+				this.currentFrame += 1;
+				if(this.currentFrame >= this.sprite.spriteImages.length) this.currentFrame = 0;
+				this.currentTicks = 0;
+			}
+		},
+	
+		getCurrentFrameImage: function() {
+			return this.sprite.spriteImages[this.currentFrame];
+		},
+		
+		draw: function(context, x, y, scale) {
+			var width = this.getCurrentFrameImage().width * scale;
+			var height = this.getCurrentFrameImage().height * scale;
+			context.drawImage(this.getCurrentFrameImage(), x - (width/2.0), y - (height/2.0), width, height);
+		}
 	}
 }
 
@@ -461,19 +496,19 @@ function checkPlayerCollisions() {
 
 				switch(obstacleCharacters[i].obstacleType) {
 					case BUNNY:
-						deathSprite = loadSprite('img/sprites/bunny_die/', 7, 50);
+						deathSprite = bunnySprite_die;
 						playerPoints += 10;
 						break;
 					case ROCK:
-						deathSprite = loadSprite('img/sprites/rock_die/', 6, 50);
+						deathSprite = rockSprite_die;
 						playerPoints += 100;
 						break;
 					case TREE:
-						deathSprite = loadSprite('img/sprites/tree_die/', 9, 50);
+						deathSprite = treeSprite_die;
 						playerPoints += 500;
 						break;
 					case SKIER:
-						deathSprite = loadSprite('img/sprites/skier_die/', 6, 50);
+						deathSprite = skierSprite_die;
 						playerPoints += 2000;
 						break;
 				}
@@ -502,7 +537,6 @@ function checkPlayerCollisions() {
 	
 	if(collided) {
 		if(snowballIsDead) {
-			var snowballSprite_die = loadSprite('img/sprites/die/', 11, 100);
 			var deathEffect = createCharacter(snowballSprite_die, createCollisonBox(0,0,0,0));
 			deathEffect.x = snowballCharacter.x;
 			deathEffect.y = snowballCharacter.y;
@@ -511,6 +545,7 @@ function checkPlayerCollisions() {
 			
 		} else {
 			snowballCharacter.sprite = snowballSprite_ouch;
+			snowballCharacter.currentFrame = 0;
 		}
 	} else {
 		switch(snowballLevel) {
