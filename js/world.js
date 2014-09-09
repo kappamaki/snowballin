@@ -20,7 +20,7 @@ var WORLD_SHRINK_CONSTANT = 0.995;
 var DIRT = 0;
 var SNOW = 1;
 
-var TERRAIN_SCALE = 2;
+var TERRAIN_SCALE = 4;
 var TERRAIN_BUFFER = 100;
 var TERRAIN_MIN_WIDTH;
 
@@ -38,8 +38,8 @@ var SKIER = 3;
 
 var KILL_THRESHOLD = [0.5, 0.2, 0.09, 0.2];
 
-var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01, 0.01], [0.15, 0.10, 0.05, 0.02], [0.15, 0.15, 0.15, 0.03], [0.25, 0.25, 0.25, 0.05]];
-var OBSTACLE_SPAWN_LIMIT = [ [20, 5, 2, 3], [300, 10, 5, 10], [5000, 50, 30, 5000], [5000, 5000, 5000, 5000]];
+var OBSTACLE_SPAWN_CHANCE = [ [0.15, 0.05, 0.01, 0.01], [0.15, 0.10, 0.05, 0.02], [0.25, 0.25, 0.25, 0.03], [0.25, 0.25, 0.25, 0.05]];
+var OBSTACLE_SPAWN_LIMIT = [ [20, 5, 2, 3], [300, 10, 5, 10], [5000, 50, 50, 5000], [5000, 5000, 5000, 5000]];
 
 var SPAWN_THRESHOLD = 300;
 
@@ -126,7 +126,7 @@ function initiateGameWorld() {
 	obstacleCharacters = new Array();
 	effectCharacters = new Array();
 	
-	TERRAIN_MIN_WIDTH = 300;
+	TERRAIN_MIN_WIDTH = 150;
 	terrainGrid = seedTerrain();
 }
 
