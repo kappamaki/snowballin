@@ -140,6 +140,10 @@ function initiateGameWorld() {
 	
 	TERRAIN_MIN_WIDTH = 150;
 	terrainGrid = seedTerrain();
+					
+	//no more bunny dance!
+	bunnySpriteLeft.ticksPerFrame = 800;
+	bunnySpriteRight.ticksPerFrame = 800;
 }
 
 function startGameLoop() {
@@ -525,6 +529,9 @@ function checkPlayerCollisions() {
 				if(worldScale === WORLD_MAX_SCALE)
 				{
 					snowballIsDead = true;
+					//make bunnies dance!
+					bunnySpriteLeft.ticksPerFrame = 200;
+					bunnySpriteRight.ticksPerFrame = 200;
 				} else {
 					setSpeedAfterCollision(obstacleCharacters[i]);
 				}
